@@ -69,11 +69,7 @@ There will be three modes (either as separate binaries or modes of one) as part 
 
 This program will absolutely benefit the wider community, should we be permitted to open-source it after the class. This handy utility can be used with more ease than the existing GPG encryption tools to quickly encrypt data.
 
-<<<<<<< Updated upstream
-This will also
-=======
 This will also be a great project to demonstrate to possible employers or to list in a personal portfolio. While it is not a novel invention, per-se, it marginally improves the ease of use of in-terminal simple data encryption, while keeping the scope of this tool minimal in order to limit feature-creep. The thorough documentation of the project will compliment this, making the result a compelling simple example of work quality. 
->>>>>>> Stashed changes
 
 In a similar manner, we plan to compose detailed documentation and document the code in-line such that it is simple for future cryptography students to use our code or algorithms as a basis for future projects or for learning about proving the security of block ciphers.
 
