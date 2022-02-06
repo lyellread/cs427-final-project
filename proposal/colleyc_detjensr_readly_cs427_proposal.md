@@ -13,7 +13,7 @@ Our project will be the implementation of a basic key manager with a terminal in
 
 # Provable Security
 
-As implied, this file encryption tool uses cryptography to encrypt a file. A file encryptor would not be worth anything if the encryption could be reversed without the key/secret, so this tool needs to use provably secure encryption (correctly) in order for the encrypted file to not reveal anything about the original file.
+As implied, this file encryption tool uses cryptography to encrypt a file. An encryption tool would not be worth anything if the encryption could be reversed without the key/secret, so this tool needs to use provably secure encryption (correctly) in order for the encrypted file to not reveal anything about the original file.
 
 The key generation will use a PRG with the system's random device to generate a key of a specified length, and will use a PRF-based cipher off of the user's password to decrypt the key to encrypt the file.
 
@@ -68,4 +68,4 @@ Our project will merit a good grade if it meets the criteria detailed above. Spe
 
 # Expected Resources
 
-We are planning to build our program in Python, so we will likely be consulting the official `python` documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this.
+We are planning to build our program in Python, so we will likely be consulting the official language documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this, aside from possibly a command-line argument parser.
