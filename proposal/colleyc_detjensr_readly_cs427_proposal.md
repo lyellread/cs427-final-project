@@ -68,4 +68,4 @@ Our project will merit a good grade if it meets the criteria detailed above. Spe
 
 # Expected Resources
 
-We are planning to build our program in Python, so we will likely be consulting the official `python` documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this, just built-in types, etc.
+We are planning to build our program in Python, so we will likely be consulting the official `python` documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this.
