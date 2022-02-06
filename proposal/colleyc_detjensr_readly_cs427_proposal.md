@@ -9,8 +9,7 @@ date: Winter 2022 - CS427 Cryptography
 
 # Summary
 
-Briefly summarize your project topic. Feel free to share any reasons for your personal interest in this topic (i.e., it
-involves an application of cryptography to my life's passion).
+Our project will be the implementation of a basic key manager with a terminal interface. It will have three major functions: `enc`, `dec`, and `keygen`. When not in use, the keys in the manager will be encrypted with a password in a symmetric encryption scheme. Messages will be encrypted and decrypted through a block cipher. The utilities will pass data via STDIN and STDOUT so that the user can take advantage of IO redirection. One password will be used for all of the keys in the key manager which will be set up on first usage of the utilities. This password is used as the key that then encrypts the store (a file perhaps) of keys. Upon usage of either the `enc` or `dec` functions, the utility will prompt the user for a password. The provided password will be used to decrypt the store before the requested key is taken (whether it was decrypted with the correct password is another story), and then re-encrypted with the provided password.
 
 # Provable Security
 
@@ -25,9 +24,9 @@ a PRF-based cipher off of the user's password to decrypt the key to encrypt the 
 
 | Team Member    | Responsibility                              |
 |----------------|---------------------------------------------|
+| Casey Colley   | Report/security proof writing               |
 | Lyell Read     | Key generation & password encryption        |
 | Robert Detjens | Stream encryption / decryption via user key |
-| Casey Colley   | Documentation & assistance                  |
 
 ## Justification
 
@@ -35,7 +34,7 @@ Justify the size of the team in terms of amount of work. Why is the project wort
 
 # Goals
 
-How will you demonstrate in-depth understanding that goes beyond what was studied in class?
+This project allows us to demonstrate the knowledge gained from this course by balancing multiple implementations of cryptography into a more real-world context. This is a rudimentary example of real tools used professionally. By actually implementing the "abstract" cryptographic standards that we learn about in class, we learn how these protocols are used in conjunction with each other to provide tangible security. Looking at one cryptographic standard at a time works when learning them for the first time in class. But in reality, the applications of these standards is more complicated. One such problem is, "how do we protect the key?" Our key manager project addresses that question.
 
 # Deliverables
 
@@ -60,4 +59,4 @@ How should I judge whether your project gets a high grade?
 
 # Expected Resources
 
-List resources/tools that you will likely use.
+We are planning to build our program in Python, so we will likely be consulting the official Python documentation. We do not think that we will need any special libraries for our project because we are implementing the cryptographic protocols ourselves. So we will likely be working the most with byte objects, which are a native type to python.
