@@ -13,7 +13,7 @@ Our project will be the implementation of a basic key manager with a terminal in
 
 # Provable Security
 
-As implied, this file encryption tool uses cryptography to encrypt a file. A file encryptor would not be worth anything if the encryption could be reversed without the key/secret, so this tool needs to use provably secure encryption (correctly) in order for the encrypted file to not reveal anything about the original file.
+As implied, this file encryption tool uses cryptography to encrypt a file. An encryption tool would not be worth anything if the encryption could be reversed without the key/secret, so this tool needs to use provably secure encryption (correctly) in order for the encrypted file to not reveal anything about the original file.
 
 The key generation will use a PRG with the system's random device to generate a key of a specified length, and will use a PRF-based cipher off of the user's password to decrypt the key to encrypt the file.
 
@@ -31,7 +31,7 @@ There are three distinct parts of this project, with each team member accepting 
 
 # Goals
 
-This project allows us to demonstrate the knowledge gained from this course by implementing multiple cryptography primitives into a more real-world context. This is a rudimentary example of real tools used professionally. By combining the "abstract" cryptographic primitives that we learn about in class in an actual implementation, we learn how these protocols are assembled to provide tangible and provable security. Looking at these cryptographic standards individually works when learning them for the first time in class; however, the application of these standards is more complicated. Implentation comes with problems, such as "how do we protect the key?" Our key manager project addresses that question.
+This project allows us to demonstrate the knowledge gained from this course by implementing multiple cryptography primitives into a more real-world context. This is a rudimentary example of real tools used professionally. By combining the "abstract" cryptographic primitives that we learn about in class in an actual implementation, we learn how these protocols are assembled to provide tangible and provable security. Looking at these cryptographic standards individually works when learning them for the first time in class; however, the application of these standards is more complicated. Implementation comes with problems, such as "how do we protect the key?" Our key manager project addresses that question.
 
 # Deliverables
 
@@ -68,4 +68,4 @@ Our project will merit a good grade if it meets the criteria detailed above. Spe
 
 # Expected Resources
 
-We are planning to build our program in Python, so we will likely be consulting the official `python` documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this.
+We are planning to build our program in Python, so we will likely be consulting the official language documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this, aside from possibly a command-line argument parser.
