@@ -69,11 +69,23 @@ There will be three modes (either as separate binaries or modes of one) as part 
 
 This program will absolutely benefit the wider community, should we be permitted to open-source it after the class. This handy utility can be used with more ease than the existing GPG encryption tools to quickly encrypt data.
 
+<<<<<<< Updated upstream
 This will also
+=======
+This will also be a great project to demonstrate to possible employers or to list in a personal portfolio. While it is not a novel invention, per-se, it marginally improves the ease of use of in-terminal simple data encryption, while keeping the scope of this tool minimal in order to limit feature-creep. The thorough documentation of the project will compliment this, making the result a compelling simple example of work quality. 
+>>>>>>> Stashed changes
 
-# Expectations
+In a similar manner, we plan to compose detailed documentation and document the code in-line such that it is simple for future cryptography students to use our code or algorithms as a basis for future projects or for learning about proving the security of block ciphers.
 
-How should I judge whether your project gets a high grade?
+# Grading Expectations
+
+Our project will merit a good grade if it meets the specifications laid out in this document. Specifically, these criteria can be broken down into the following categories:
+
+- Project Documentation: A complete set of documentation for each component, algorithm and an explanation of the security threat models and guarantees for each. 
+  - Documentation in-line within the code produced as part of this project
+  - Documentation of `enc`, `dec` and `keygen` to explain command line arguments to end users.
+- `enc`, `dec`: Encryption and decryption programs that make use of keys generated within `keygen` to encrypt or decrypt the contents of provided files, following the specifications and security guarantees laid out in the documentation.
+- `keygen` generate keys, allowing the user to encrypt keys at rest with a password. These at-rest keys will be encrypted following the specifications in the documentation.
 
 # Expected Resources
 
