@@ -23,14 +23,14 @@ a PRF-based cipher off of the user's password to decrypt the key to encrypt the 
 # Division of Labor
 
 | Team Member    | Responsibility                              |
-|----------------|---------------------------------------------|
+|:---------------|:--------------------------------------------|
 | Casey Colley   | Report/security proof writing               |
 | Robert Detjens | Stream encryption / decryption via user key |
 | Lyell Read     | Key generation & password encryption        |
 
 ## Justification
 
-Justify the size of the team in terms of amount of work. Why is the project worth 25% of your grade?
+There are three distinct parts of this project, with each team member accepting a large workload in order to complete this project. Casey will be mainly working on composing the documentation and making sure that the documented specifications match the implementation. Robert will be designing a program that takes command line arguments and uses a block cipher to get user input encrypted and written to a file. In addition, this program will prompt the user for a password interactively but outside of the shell, or before handling any I/O redirection. Lyell will handle the key generation and at-rest storage of keys, as well as the parsing of the keys into the programs that Robert will develop. Robert and Lyell will both be responsible for ensuring that their implementations match the designed algorithms for their specific parts. 
 
 # Goals
 
@@ -54,8 +54,9 @@ There will be three modes (either as separate binaries or modes of one) as part 
 
 # Project Impact
 
-Will you be able to use this project as part of your portfolio? Will the project benefit a wider community (e.g., other
-students learning cryptography)?
+This program will absolutely benefit the wider community, should we be permitted to open-source it after the class. This handy utility can be used with more ease than the existing GPG encryption tools to quickly encrypt data. 
+
+This will also 
 
 # Expectations
 
