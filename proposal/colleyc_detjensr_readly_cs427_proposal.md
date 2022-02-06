@@ -47,6 +47,10 @@ There will be three modes (either as separate binaries or modes of one) as part 
   - Encrypts specified files into encrypted archive using a private key from `keygen`
 - `dec`
   - Decrypts specified archive into original files using a private key from `keygen`
+- Written report
+    - Description of functionality
+    - Cryptographic properties
+    - Security proofs
 
 # Project Impact
 
