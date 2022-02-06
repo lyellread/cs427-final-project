@@ -9,7 +9,7 @@ date: Winter 2022 - CS427 Cryptography
 
 # Summary
 
-Briefly summarize your project topic. Feel free to share any reasons for your personal interest in this topic (i.e., it involves an application of cryptography to my life's passion).
+Our project will be the implementation of a basic key manager with a terminal interface. It will have three major functions: `enc`, `dec`, and `keygen`. When not in use, the keys in the manager will be encrypted with a password in a symmetric encryption scheme. Messages will be encrypted and decrypted through a block cipher. The utilities will pass data via STDIN and STDOUT so that the user can take advantage of IO redirection. One password will be used for all of the keys in the key manager which will be set up on first usage of the utilities. This password is used as the key that then encrypts the store (a file perhaps) of keys. Upon usage of either the `enc` or `dec` functions, the utility will prompt the user for a password. The provided password will be used to decrypt the store before the requested key is taken (whether it was decrypted with the correct password is another story), and then re-encrypted with the provided password.
 
 # Provable Security
 
@@ -19,11 +19,11 @@ In case it's not totally obvious, please justify the project's relationship to c
 
 List the team members and proposed division of effort
 
-| Team Member    | Responsibility |
-|----------------|----------------|
-| Casey Colley   |                |
-| Robert Detjens |                |
-| Lyell Read     |                |
+| Team Member    | Responsibility                 |
+|----------------|--------------------------------|
+| Casey Colley   | Report/security proof writing  |
+| Robert Detjens |                                |
+| Lyell Read     |                                |
 
 ## Justification
 
