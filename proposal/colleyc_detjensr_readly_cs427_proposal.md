@@ -1,9 +1,9 @@
 ---
 title: Final Project Proposal
 author:
-- Casey Colley
-- Robert Detjens
-- Lyell Read
+  - Casey Colley
+  - Robert Detjens
+  - Lyell Read
 date: Winter 2022 - CS427 Cryptography
 ---
 
@@ -31,11 +31,9 @@ There are three distinct parts of this project, with each team member accepting 
 
 # Goals
 
-This project allows us to demonstrate the knowledge gained from this course by balancing multiple implementations of cryptography into a more real-world context. This is a rudimentary example of real tools used professionally. By actually implementing the "abstract" cryptographic standards that we learn about in class, we learn how these protocols are used in conjunction with each other to provide tangible security. Looking at one cryptographic standard at a time works when learning them for the first time in class. But in reality, the applications of these standards is more complicated. One such problem is, "how do we protect the key?" Our key manager project addresses that question.
+This project allows us to demonstrate the knowledge gained from this course by implementing multiple cryptography primitives into a more real-world context. This is a rudimentary example of real tools used professionally. By combining the "abstract" cryptographic primitives that we learn about in class in an actual implementation, we learn how these protocols are assembled to provide tangible and provable security. Looking at these cryptographic standards individually works when learning them for the first time in class; however, the application of these standards is more complicated. Implementation comes with problems, such as "how do we protect the key?" Our key manager project addresses that question.
 
 # Deliverables
-
-There will be three modes (either as separate binaries or modes of one) as part of this project:
 
 - `keygen`
   - Creates the encryption keys using the system's RNG device
@@ -45,23 +43,24 @@ There will be three modes (either as separate binaries or modes of one) as part 
 - `dec`
   - Decrypts specified archive into original files using a private key from `keygen`
 - Written report
-    - Description of functionality
-    - Cryptographic properties
-    - Security proofs
+  - Description of functionality
+  - Cryptographic properties
+  - Security proofs
 
 # Project Impact
 
-This program will absolutely benefit the wider community, should we be permitted to open-source it after the class. This handy utility can be used with more ease than the existing GPG encryption tools to quickly encrypt data.
+This program will absolutely benefit the wider community, should we be permitted to open-source it after the class. This utility will be easier to use than the existing cumbersome-but-powerful GPG encryption suite for quickly encrypting data.
 
-This will also be a great project to demonstrate to possible employers or to list in a personal portfolio. While it is not a novel invention, per-se, it marginally improves the ease of use of in-terminal simple data encryption, while keeping the scope of this tool minimal in order to limit feature-creep. The thorough documentation of the project will compliment this, making the result a compelling simple example of work quality.
+This will also be a great project to demonstrate to possible employers or to list in a personal portfolio. While it is not a novel invention *per-se*, it should improve the ease of use of in-terminal simple data encryption, while keeping the scope minimal to reduce feature-creep. This will serve as a simple yet compelling example of work quality.
 
 In a similar manner, we plan to compose detailed documentation and document the code in-line such that it is simple for future cryptography students to use our code or algorithms as a basis for future projects or for learning about proving the security of block ciphers.
 
 # Grading Expectations
 
-Our project will merit a good grade if it meets the specifications laid out in this document. Specifically, these criteria can be broken down into the following categories:
+Our project will merit a good grade if it meets the criteria detailed above. Specifically:
 
-- **Project Documentation**: A complete set of documentation for each component, algorithm and an explanation of the security threat models and guarantees for each.
+- **Project Documentation**: A complete set of documentation for all components.
+  - Explanation of the security guarantees and thread models for the algorithms used
   - Documentation in-line within the code produced as part of this project
   - Documentation of `enc`, `dec` and `keygen` to explain command line arguments to end users.
 - **`enc`, `dec`**: Encryption and decryption programs that make use of keys generated within `keygen` to encrypt or decrypt the contents of provided files, following the specifications and security guarantees laid out in the documentation.
@@ -69,4 +68,4 @@ Our project will merit a good grade if it meets the specifications laid out in t
 
 # Expected Resources
 
-We are planning to build our program in `python`, so we will likely be consulting the official `python` documentation. We do not think that we will need any special libraries for our project because we are implementing the cryptographic protocols ourselves. So we will likely be working the most with byte objects, which are a native type to `python`.
+We are planning to build our program in Python, so we will likely be consulting the official `python` documentation. As we will be implementing the cryptographic protocols manually, we will not be using any outside libraries for this, just built-in types, etc.
