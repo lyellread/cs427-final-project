@@ -31,7 +31,7 @@ Justify the size of the team in terms of amount of work. Why is the project wort
 
 # Goals
 
-How will you demonstrate in-depth understanding that goes beyond what was studied in class?
+This project allows us to demonstrate the knowledge gained from this course by balancing multiple implementations of cryptography into a more real-world context. This is a rudimentary example of real tools used professionally. By actually implementing the "abstract" cryptographic standards that we learn about in class, we learn how these protocols are used in conjunction with each other to provide tangible security. Looking at one cryptographic standard at a time works when learning them for the first time in class. But in reality, the applications of these standards is more complicated. One such problem is, "how do we protect the key?" Our key manager project addresses that question.
 
 # Deliverables
 
@@ -51,4 +51,4 @@ How should I judge whether your project gets a high grade?
 
 # Expected Resources
 
-List resources/tools that you will likely use.
+We are planning to build our program in Python, so we will likely be consulting the official Python documentation. We do not think that we will need any special libraries for our project because we are implementing the cryptographic protocols ourselves. So we will likely be working the most with byte objects, which are a native type to python.
