@@ -25,8 +25,8 @@ a PRF-based cipher off of the user's password to decrypt the key to encrypt the 
 | Team Member    | Responsibility                              |
 |----------------|---------------------------------------------|
 | Casey Colley   | Report/security proof writing               |
-| Lyell Read     | Key generation & password encryption        |
 | Robert Detjens | Stream encryption / decryption via user key |
+| Lyell Read     | Key generation & password encryption        |
 
 ## Justification
 
