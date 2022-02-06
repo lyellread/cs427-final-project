@@ -84,11 +84,11 @@ In a similar manner, we plan to compose detailed documentation and document the 
 
 Our project will merit a good grade if it meets the specifications laid out in this document. Specifically, these criteria can be broken down into the following categories:
 
-- Project Documentation: A complete set of documentation for each component, algorithm and an explanation of the security threat models and guarantees for each. 
+- **Project Documentation**: A complete set of documentation for each component, algorithm and an explanation of the security threat models and guarantees for each. 
   - Documentation in-line within the code produced as part of this project
   - Documentation of `enc`, `dec` and `keygen` to explain command line arguments to end users.
-- `enc`, `dec`: Encryption and decryption programs that make use of keys generated within `keygen` to encrypt or decrypt the contents of provided files, following the specifications and security guarantees laid out in the documentation.
-- `keygen` generate keys, allowing the user to encrypt keys at rest with a password. These at-rest keys will be encrypted following the specifications in the documentation.
+- **`enc`, `dec`**: Encryption and decryption programs that make use of keys generated within `keygen` to encrypt or decrypt the contents of provided files, following the specifications and security guarantees laid out in the documentation.
+- **`keygen`**: Generate keys, allowing the user to encrypt keys at rest with a password. These at-rest keys will be encrypted following the specifications in the documentation.
 
 # Expected Resources
 
