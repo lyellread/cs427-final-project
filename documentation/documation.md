@@ -25,10 +25,15 @@ why r u gae
 
 Our design utilizes a Block Cipher (PRP) $F$. $F$ will be the AES block cipher with a 256-bit key. The reason that we are using a 256-bit key is because at some point we will use the output of SHA-256 as the key/seed to the Block Cipher.
 
+https://www.geeksforgeeks.org/advanced-encryption-standard-aes/
+https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
+
 \begin{center}
   \codebox{
     \framebox{
-      klen = 256 \\
+      \codebox {
+        \> klen = 256 \\
+      }
       \codebox{
         \underline{F_{AES}($k$, $d$):} \\
         \> TODO
@@ -40,17 +45,36 @@ Our design utilizes a Block Cipher (PRP) $F$. $F$ will be the AES block cipher w
 Our symmetric encryption mode will be CTR mode.
 
 \begin{center}
-  \codebox {
+  \codebox{
     \framebox{
-      blen = 256 \\
       \codebox {
-        \underline{Enc($k$, $m_1||...||m_l$):} \\
+        \> blen = 256 \\
+      }
+      \codebox{
+        \underline{Enc_{CTR}($k$, $m_1||...||m_l$):} \\
         \> $r \gets {0, 1}^{blen}$ \\
         \> $c_0 := r$ \\
         \> for $i = 1$ to $l$: \\
-        \> \> $c_i := F(k, r) \oplus m_i$
+        \> \> $c_i := F(k, r) \oplus m_i$ \\
         \> \> $r$ := $r + 1$ \% $2^{blen}$ \\
         \> return $c_0 || ... || c_l$
+      }
+      \codebox{
+        \underline{Dec_{CTR}($k$, $c_0||...||c_l$):} \\
+        \> TODO
+      }
+    }
+  }
+\end{center}
+
+The hashing function we will use is SHA-256.
+
+\begin{center}
+  \codebox{
+    \framebox{
+      \codebox{
+        \underline{Hash_{SHA-256}(m):} \\
+        \> TODO
       }
     }
   }
@@ -59,62 +83,87 @@ Our symmetric encryption mode will be CTR mode.
 ## Main
 
 ```py
-Init():
+from getpass import getpass
 
+klen, blen = 256
+
+# Stored persistantly, in file or otherwise
+s = ''
+K = ''
+H = ''
+
+Init():
+  k = KeyGen()
+  s = KeyGen()
+  print("You will make a new password.")
+  H = Pass2Key()
+  print("You will enter the password again.")
+  K = EncKey()
+  print("Vault has been initialized.")
 
 Main():
-  
+  if:
+    Init()
+
+  k = DecKey()
+  # Decrypt vault with k
+  print("Vault has been decrypted.")
+
+  #Encryption and Decryption behavior here
+
+  # Re-encrypt vault files with k
+  # k is not persistant on shutdown
+
 ```
+
+getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-input-but-dont-show-keys-entered/43673912
 
 ## Password/Key Generation and Storage
 
 \begin{center}
   \codebox{
     \framebox{
-      
       \codebox{
-        $k$ := DecKey() \\
-        \\
-        $s$ := KeyGen() \\
-        $H$ := Pass2Key() \\
-        $K$ := EncKey(h, k)
+        \> $k$ := DecKey() \\
+        \> \\
+        \> $s$ := KeyGen() \\
+        \> $H$ := Pass2Key() \\
+        \> $K$ := EncKey(h, k)
       }
-
+      \codebox{
+        \underline{KeyGen():} \\
+        \> $k \gets {0, 1}^{klen} \\
+        \> return $k$
+      }
+      \codebox{
+        \underline{Pass2Key():} \\
+        \> $p$ := get_passphrase() \\
+        \> $h$ := Hash_{SHA-256}($p||s$) \\
+        \> return $h$
+      }
+      \codebox{
+        \underline{EncKey(k):} \\
+        \> $h$ := H \\
+        \> K = Enc_{CTR}(h, k) \\
+        \> return $K$
+      }
+      \codebox{
+        \underline{DecKey(K):} \\
+        \> $h$ := Pass2Key() \\
+        \> if $h \neq H$: \\
+        \> \> return $err$ \\
+        \> k = Dec_{CTR}(h, K) \\
+        \> return $k$
+      }
     }
   }
 \end{center}
-
-k := KeyGen()   // not stored
-s := KeyGen()
-H := Pass2Key()
-K := EncKey(h, k)
-
-KEYGEN():
-  k \gets {0, 1}}^{klen}
-  return k
-
-PASS2KEY():
-  p := get_passphrase()
-  h := SHA256(p||s)
-  return h
-
-ENCKEY():
-  h := PASS2KEY()
-  if h != H:
-    return err
-  K = CTR mode encryption of k using F(h, k)
-
-DECKEY():
-    h := PASS2KEY()
-    if h != H:
-      return err
-    k = CTR mode decryption of K using F(h, K)
 
 Here we define a library of functions that will handle the generation and storage of the Master Key that will be used to encrypt and decrypt the stored keys in the manager. The Master Key is generated with function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
 This Master Key will be stored on the machine, encrypted. The encryption and decryption of the Master Key will be done with a password and in the CTR mode, as shown in the remaining two functions, Pass2Key() and EncKey(). The correct, salted hash of the password will be stored alongside the encrypted Master Key. 
 
-EncKey() begins with Pass2Key(), where it will prompt the user for the password, salt it, and then return the SHA256 hash.  EncKey will compare this hash with the stored, correct hash. If they do not match (it is the wrong password), then an error is returned. Otherwise, EncKey will call the CTR mode, using the hashed password as a key/seed to the PRP F. 
+EncKey() begins with Pass2Key(), where it will prompt the user for the password, salt it, and then return the SHA-256 hash.  EncKey will compare this hash with the stored, correct hash. If they do not match (it is the wrong password), then an error is returned. Otherwise, EncKey will call the CTR mode, using the hashed password as a key/seed to the PRP F. 
 
 ## Encryption and Decryption
 
