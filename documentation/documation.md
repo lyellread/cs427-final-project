@@ -23,16 +23,65 @@ why r u gae
 
 ## Primitives
 
-Our PRP F will be the AES block cipher with a 256 bit key (the hash that comes from SHA-256)
+Our design utilizes a Block Cipher (PRP) $F$. $F$ will be the AES block cipher with a 256-bit key. The reason that we are using a 256-bit key is because at some point we will use the output of SHA-256 as the key/seed to the Block Cipher.
+
+\begin{center}
+  \codebox{
+    \framebox{
+      klen = 256 \\
+      \codebox{
+        \underline{F_{AES}($k$, $d$):} \\
+        \> TODO
+      }
+    }
+  }
+\end{center}
 
 Our symmetric encryption mode will be CTR mode.
+
+\begin{center}
+  \codebox {
+    \framebox{
+      blen = 256 \\
+      \codebox {
+        \underline{Enc($k$, $m_1||...||m_l$):} \\
+        \> $r \gets {0, 1}^{blen}$ \\
+        \> $c_0 := r$ \\
+        \> for $i = 1$ to $l$: \\
+        \> \> $c_i := F(k, r) \oplus m_i$
+        \> \> $r$ := $r + 1$ \% $2^{blen}$ \\
+        \> return $c_0 || ... || c_l$
+      }
+    }
+  }
+\end{center}
+
+## Main
+
+```py
+Init():
+
+
+Main():
+  
+```
 
 ## Password/Key Generation and Storage
 
 \begin{center}
+  \codebox{
+    \framebox{
+      
+      \codebox{
+        $k$ := DecKey() \\
+        \\
+        $s$ := KeyGen() \\
+        $H$ := Pass2Key() \\
+        $K$ := EncKey(h, k)
+      }
 
-
-
+    }
+  }
 \end{center}
 
 k := KeyGen()   // not stored
