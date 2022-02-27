@@ -12,13 +12,13 @@ header-includes:
 
 # Summary
 
-420 cash money
+placeholder
 
 \pagebreak
 
 # Cryptographic Properties
 
-why r u gae
+placeholder
 
 \pagebreak
 
@@ -26,7 +26,7 @@ why r u gae
 
 ## Primitives
 
-Our design utilizes a Block Cipher (PRP) $F$. $F$ will be the AES block cipher with a 256-bit key. The reason that we are using a 256-bit key is because at some point we will use the output of SHA-256 as the key/seed to the Block Cipher.
+Our design utilizes $F$, a Block Cipher (PRP). $F$ will be the AES block cipher with a 256-bit key. This key will be derived using a common hashing algorithm, $\subname{SHA-256}$ based on the text password entered by the user. 
 
 - https://www.geeksforgeeks.org/advanced-encryption-standard-aes/
 - https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
@@ -35,6 +35,7 @@ Our design utilizes a Block Cipher (PRP) $F$. $F$ will be the AES block cipher w
 \fcodebox{
   \codebox {
     \> klen = 256 \\
+    \> TODO: types declared here
   }
   \qquad
   \codebox{
@@ -50,6 +51,7 @@ Our symmetric encryption mode will be CTR mode.
 \fcodebox{
   \codebox {
     \> blen = 256 \\
+    \> TODO: types declared here
   }
   \qquad
   \codebox{
@@ -73,8 +75,15 @@ The hashing function we will use is SHA-256.
 
 \begin{center}
 \fcodebox{
-  \underline{$\subname{Hash}_{SHA-256}(m)$:} \\
-  \> TODO
+  \codebox {
+    \> klen = 256 \\
+    \> TODO: types declared here
+  }
+  \qquad
+  \codebox{
+    \underline{$\subname{Hash}_{SHA-256}(m)$:} \\
+    \> TODO
+  }
 }
 \end{center}
 
@@ -147,7 +156,9 @@ getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-inpu
     \> $K := Enc_{CTR}(h, k)$ \\
     \> return $K$
   }
-  \qquad
+}
+
+\fcodebox{
   \codebox{
     \underline{DecKey(K):} \\
     \> $h := Pass2Key()$ \\
@@ -159,6 +170,8 @@ getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-inpu
 }
 \end{center}
 
+TODO: Define types and formalize scheme in tex
+
 Here we define a library of functions that will handle the generation and storage of the Master Key that will be used to encrypt and decrypt the stored keys in the manager. The Master Key is generated with function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
 This Master Key will be stored on the machine, encrypted. The encryption and decryption of the Master Key will be done with a password and in the CTR mode, as shown in the remaining two functions, Pass2Key() and EncKey(). The correct, salted hash of the password will be stored alongside the encrypted Master Key.
@@ -167,12 +180,12 @@ EncKey() begins with Pass2Key(), where it will prompt the user for the password,
 
 ## Encryption and Decryption
 
-hee ho
+placeholder
 
 \pagebreak
 
 # Security Proofs
 
-gg
+placeholder
 
 \pagebreak
