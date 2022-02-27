@@ -7,7 +7,7 @@ author:
 date: Winter 2022
 
 header-includes:
-  - \include{../macros.tex}
+  - \include{macros.tex}
 ---
 
 # Summary
