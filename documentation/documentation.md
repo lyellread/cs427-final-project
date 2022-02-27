@@ -1,17 +1,25 @@
 ---
-title: CS427 Final Project - Key Manager
+title: CS427 Final Project - Stream File Encryption & Key Management
 author:
   - Casey Colley
   - Robert Detjens
   - Lyell Read
-date: Winter 2022
 
 colorlinks: true
+date: CS 427,  Winter 2022
+toc: true
+toc-depth: 5
+include-before:
+- '`\newpage{}`{=latex}'
+urlcolor: blue
+fontsize: 11pt
 header-includes:
   - \include{macros.tex}
 ---
 
-# Summary
+\pagebreak
+
+# Abstract
 
 placeholder
 
