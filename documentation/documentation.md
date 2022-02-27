@@ -8,7 +8,7 @@ date: Winter 2022
 
 colorlinks: true
 header-includes:
-  - \include{../macros.tex}
+  - \include{macros.tex}
 ---
 
 # Summary
