@@ -8,7 +8,7 @@ date: CS 427,  Winter 2022
 toc: true
 toc-depth: 5
 include-before:
-- '`\newpage{}`{=latex}'
+- '`\vspace{4cm}`{=latex}'
 urlcolor: blue
 fontsize: 11pt
 header-includes:
@@ -23,13 +23,9 @@ placeholder
 
 \pagebreak
 
-# Cryptographic Properties
+# Stream Encryption and Decryption (`enc`, `dec`)
 
 placeholder
-
-\pagebreak
-
-# Specification
 
 ## Primitives
 
@@ -51,6 +47,8 @@ Our design utilizes $F$, a Block Cipher (PRP). $F$ will be the AES block cipher 
   }
 }
 \end{center}
+
+## Formal Scheme Definition
 
 Our symmetric encryption mode will be CTR mode.
 
@@ -132,7 +130,19 @@ Main():
 
 getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-input-but-dont-show-keys-entered/43673912
 
-## Password/Key Generation and Storage
+## Security Proof and Reasoning
+
+placeholder
+
+\pagebreak
+
+# Key Generation and Storage (`keygen`)
+
+## Primitives
+
+placeholder
+
+## Formal Scheme Definition
 
 \begin{center}
 \fcodebox{
@@ -179,20 +189,14 @@ getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-inpu
 
 TODO: Define types and formalize scheme in tex
 
+## Security Proof and Reasoning
+
 Here we define a library of functions that will handle the generation and storage of the Master Key that will be used to encrypt and decrypt the stored keys in the manager. The Master Key is generated with function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
 This Master Key will be stored on the machine, encrypted. The encryption and decryption of the Master Key will be done with a password and in the CTR mode, as shown in the remaining two functions, Pass2Key() and EncKey(). The correct, salted hash of the password will be stored alongside the encrypted Master Key.
 
 EncKey() begins with Pass2Key(), where it will prompt the user for the password, salt it, and then return the SHA-256 hash.  EncKey will compare this hash with the stored, correct hash. If they do not match (it is the wrong password), then an error is returned. Otherwise, EncKey will call the CTR mode, using the hashed password as a key/seed to the PRP F.
 
-## Encryption and Decryption
+# Conclusion and Discussion
 
 placeholder
-
-\pagebreak
-
-# Security Proofs
-
-placeholder
-
-\pagebreak
