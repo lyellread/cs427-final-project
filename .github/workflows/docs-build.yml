@@ -1,6 +1,9 @@
 name: pdf-build
 
-on: [push]
+on:
+  push:
+    paths:
+      - documentation/**
 
 jobs:
   md2pdf:
