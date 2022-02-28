@@ -7,12 +7,16 @@ author:
 
 colorlinks: true
 date: CS 427,  Winter 2022
+
 toc: true
 toc-depth: 5
-include-before:
-- '`\vspace{4cm}`{=latex}'
 urlcolor: blue
 fontsize: 11pt
+
+# add space between title & toc
+include-before:
+  - \vspace{4cm}
+
 header-includes:
   - \include{macros.tex}
 ---
