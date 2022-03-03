@@ -3,7 +3,7 @@ name: pdf-build
 on:
   push:
     paths:
-      - documentation/**
+      - documentation/*.md
 
 jobs:
   md2pdf:
