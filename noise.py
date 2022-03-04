@@ -15,13 +15,12 @@ Options:
     -h --help         Show this help message
     -v --verbose      Show debug output
     -k --key KEYFILE  Key to use when encrypting or decrypting a file
-
 """
 
 from docopt import docopt
 import logging
 
-from modules import enc, dec, keygen
+from modules import encrypt, keygen
 
 if __name__ == "__main__":
     ARGS = docopt(__doc__)
@@ -38,6 +37,6 @@ if __name__ == "__main__":
     if ARGS["keygen"]:
         keygen.keygen(ARGS["<keyfile>"])
     elif ARGS["encrypt"]:
-        enc.enc(ARGS["<keyfile>"], ARGS["<infile>"], ARGS["<outfile.noise>"])
+        encrypt.enc(ARGS["<keyfile>"], ARGS["<infile>"], ARGS["<outfile.noise>"])
     elif ARGS["decrypt"]:
-        dec.dec(ARGS["<keyfile>"], ARGS["<infile.noise>"], ARGS["<outfile>"])
+        encrypt.dec(ARGS["<keyfile>"], ARGS["<infile.noise>"], ARGS["<outfile>"])
