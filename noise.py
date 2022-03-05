@@ -24,6 +24,8 @@ import sys
 
 from modules import encrypt, keygen
 
+# from modules import common  # testing
+
 if __name__ == "__main__":
 
     ARGS = docopt(__doc__)
