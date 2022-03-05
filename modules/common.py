@@ -12,48 +12,77 @@ LAMBDA = LAMBDA_BITS // 8  # but bytestrings are in bytes
 
 
 def prp(key: bytes, msg: bytes) -> bytes:
-    # this uses AES as a PRP. Works on LAMBDA-length byte strings.
+    """
+    Implementation of a Pseudorandom Permutation or Block Cipher
+    This PRP works on LAMBDA-byte-strings.
+    """
 
-    # PRF / PRPs work on $\bits^\lambda * \bits^lambda -> \bits^\lambda$
-    # so make sure inputs are the right size
+    # Assert the input lengths are correct
     assert len(key) == LAMBDA and len(msg) == LAMBDA
 
-    return bytes(pyaes.AES(key).encrypt(list(msg)))
+    # Use AES as the PRP to encrypt one block of msg
+    ctx = bytes(pyaes.AES(key).encrypt(list(msg)))
+
+    # Check that the output length of the PRP is of block length
+    assert len(ctx) == LAMBDA
+
+    return ctx
 
 
 def xor(m: bytes, k: bytes) -> bytes:
+    """
+    Computes XOR between m and k
+    """
+
+    # Check that the arguments are the same length.
     if len(m) != len(k):
-        raise Exception(f"xor lengths mismatch")
+        raise Exception(f"Arguments to XOR are not the same length.")
 
     return bytes(a ^ b for a, b in zip(m, k))
 
 
 def get_random_bytes(l):
+    """
+    Uses /dev/urandom to get l random bytes
+    """
+
     return os.urandom(l)
 
 
 def pad(msg: list, length: int) -> list:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
-
+    # Calculate the amount that msg[-1] is under length
     padding_offset = len(msg[-1]) % length
 
     # Check what type of padding is needed
     if padding_offset != 0:
         # Add padding to last block
+        # Append the proper number of zero bytes (one less than the total
+        #   number of bytes of padding required)
         msg[-1] += b"\x00" * (length - padding_offset - 1)
+
+        # Set the last byte appended to be equal to the number of bytes of
+        #   padding including this byte that have been used)
         msg[-1] += (length - padding_offset).to_bytes(1, "big")
 
     else:
-        # Add whole new block.
+        # Add whole new block. Create an empty bytestring
         padding = b""
+        # Append the proper number of zero bytes (one less than the block length
+        #   provided in length)
         padding += b"\x00" * (length - 1)
+        # Set the last byte appended to be equal to the number of bytes of
+        #   padding including this byte that have been used, in this case, length)
         padding += length.to_bytes(1, "big")
+        # Add new block
         msg.append(padding)
 
     # print(f"[Pad] : Post-padding msg: {msg}")
 
-    assert len(msg[-1]) % length == 0
+    # Assert that our last message - be it new block or modified last block - is
+    #   of length length.
+    assert len(msg[-1]) == length
 
     return msg
 
@@ -129,9 +158,11 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
 
     # Parse msg into blocks.
     m = []
+    # Get all LAMBDA-length blocks extracted
     for x in range(len(msg) // LAMBDA):
         m.append(msg[:LAMBDA])
         msg = msg[LAMBDA:]
+    # Check and extract a trailing, non-LAMBDA-length block
     if len(msg) % LAMBDA != 0:
         m.append(msg)
 
@@ -152,6 +183,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
         c.append(ci)
         r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
+    # Recombine array into a string of bytes.
     return b"".join(c)
 
 
@@ -176,6 +208,8 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
 
     # Parse ctx into blocks.
     c = []
+    # ctx is guaranteed to be a whole number of blocks, therefore no need to check
+    #   for a trailing block of less than LAMBDA
     for x in range(len(ctx) // LAMBDA):
         c.append(ctx[:LAMBDA])
         ctx = ctx[LAMBDA:]
@@ -195,4 +229,5 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     # Remove padding from the array of blocks
     m = unpad(m, LAMBDA)
 
+    # Join array into a string of bytes for return.
     return b"".join(m)
