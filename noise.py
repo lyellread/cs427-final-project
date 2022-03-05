@@ -4,7 +4,7 @@
 noise - Nice 'Ol Interactive Stream Encryption
 
 Usage:
-    noise keygen [-v] [KEYFILE]
+    noise keygen [-v] KEYFILE
     noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise --test
