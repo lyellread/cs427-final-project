@@ -35,7 +35,7 @@ placeholder
 
 ## Primitives
 
-Our design utilizes $F$, a Block Cipher (PRP). $F$ will be the AES block cipher with a 256-bit key. This key will be derived using a common hashing algorithm, $\subname{SHA-256}$ based on the text password entered by the user.
+Our design utilizes $F$, a Block Cipher (PRP). $F$ will be the AES block cipher with a 256-bit key. This key will be derived using a common hashing algorithm, $\subname{sha256}$ based on the text password entered by the user.
 
 - https://www.geeksforgeeks.org/advanced-encryption-standard-aes/
 - https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf

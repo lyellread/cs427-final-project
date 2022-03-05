@@ -37,6 +37,6 @@ if __name__ == "__main__":
     if ARGS["keygen"]:
         keygen.keygen(ARGS["<keyfile>"])
     elif ARGS["encrypt"]:
-        encrypt.enc(ARGS["<keyfile>"], ARGS["<infile>"], ARGS["<outfile.noise>"])
+        encrypt.enc(ARGS["--key"], ARGS["<infile>"], ARGS["<outfile.noise>"])
     elif ARGS["decrypt"]:
-        encrypt.dec(ARGS["<keyfile>"], ARGS["<infile.noise>"], ARGS["<outfile>"])
+        encrypt.dec(ARGS["--key"], ARGS["<infile.noise>"], ARGS["<outfile>"])
