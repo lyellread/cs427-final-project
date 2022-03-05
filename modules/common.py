@@ -94,7 +94,8 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
 
     # Pad the array of blocks
     m = pad(m, LAMBDA)
-    # Encrypt the message
+
+    # Encrypt the message block by block
     c = []
     r = get_random_bytes(LAMBDA)
     c0 = r
@@ -136,7 +137,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
         c.append(ctx[:LAMBDA])
         ctx = ctx[LAMBDA:]
 
-    # Encrypt the message
+    # Decrypt the message block by block
     m = []
     r = c[0]
 
