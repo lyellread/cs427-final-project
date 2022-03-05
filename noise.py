@@ -22,7 +22,11 @@ import logging
 
 from modules import encrypt, keygen
 
+# from modules import common # testing
+
 if __name__ == "__main__":
+    # common.test()
+
     ARGS = docopt(__doc__)
 
     if ARGS["--verbose"]:
