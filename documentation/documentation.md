@@ -138,15 +138,168 @@ getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-inpu
 
 ## Security Proof and Reasoning
 
-placeholder
+We will prove that the encryption scheme of our key manager, a modified CTR mode, has security against chosen ciphertext attacks.
+
+To prove that a scheme has CCA security, we must prove that two random plaintexts (L & R) cannot be distinguished from each other, including any partial information, like so:
+
+\begin{center}
+  \titlecodebox{$\lib{CCA-L}^\Sigma$}{
+    \codebox{
+      \>$k \gets \Sigma$.KeyGen \\
+      \> $S := \empty$ \\
+    }
+    \codebox{
+      \underline{Eavesdrop($m_L, m_R$):} \\
+      \> if $|m_L| \neq |m_R|$ return `err` \\
+      \> $c:= \Sigma.Enc(k, m_L$)$ \\
+      \> $S := S \union {c}$ \\
+      \> return $c$ \\
+    }
+    \codebox{
+      \underline{Decrypt($c$)} \\
+      \> if $c \in S$ return `err` \\
+      \> return $\Sigma.Dec(k, c$)
+    }
+  }
+  $\indist$
+  \titlecodebox{$\lib{CCA-R}^\Sigma$}{
+    \codebox{
+      \> $k \gets \Sigma$.KeyGen \\
+      \> $S := \empty$ \\
+    }
+    \codebox{
+      \underline{Eavesdrop($m_L, m_R$):} \\
+      \> if $|m_L| \neq |m_R|$ return `err` \\
+      \> $c:= \Sigma.Enc(k, m_R$) \\
+      \> $S := S \union {c}$ \\
+      \> return $c$ \\
+    }
+    \codebox{
+      \underline{Decrypt($c$)} \\
+      \> if $c \in S$ return `err` \\
+      \> return $\Sigma.Dec(k, c$)
+    }
+  }
+\end{center}
+
+
+\begin{center}
+  \titlecodebox{$\lib{CCA-L}^\Sigma$}{
+    \codebox{
+      \>$k \gets \Sigma$.KeyGen \\
+      \> $S := \empty$ \\
+    }
+    \codebox{
+      \underline{Eavesdrop($m_L, m_R$):} \\
+      \> if $|m_L| \neq |m_R|$ return `err` \\
+      \> $c:= \Sigma.Enc(k, \highlightline{m_{1L}||...||m_{lL}}$)$ \\
+      \> $S := S \union {c}$ \\
+      \> return $c$ \\
+    }
+    \codebox{
+      \underline{Decrypt($c$)} \\
+      \> if $c \in S$ return `err` \\
+      \> return $\Sigma.Dec(k, c$)
+    }
+  }
+  $\link$
+  \codebox{
+    \framebox{
+      \codebox{
+        \underline{$\subname{Enc}_{CTR}(k, m_{1L}||...||m_{lL}):$} \\
+        \> $r \gets \bits^{blen}$ \\
+        \> $c_0 := r$ \\
+        \> for $i = 1$ to $l$: \\
+        \> \> $c_i := F(k, m_{iL}||r)$ \\
+        \> \> $r := r + 1 \% 2^{blen}$ \\
+        \> return $c_0 || ... || c_l$
+      }
+    }
+  }
+  $\indist$
+  \titlecodebox{$\lib{CCA-R}^\Sigma$}{
+    \codebox{
+      \> $k \gets \Sigma$.KeyGen \\
+      \> $S := \empty$ \\
+    }
+    \codebox{
+      \underline{Eavesdrop($m_L, m_R$):} \\
+      \> if $|m_L| \neq |m_R|$ return `err` \\
+      \> $c:= \Sigma.Enc(k, \highlightline{m_{1R}||...||m_{lR}}$) \\
+      \> $S := S \union {c}$ \\
+      \> return $c$ \\
+    }
+    \codebox{
+      \underline{Decrypt($c$)} \\
+      \> if $c \in S$ return `err` \\
+      \> return $\Sigma.Dec(k, c$)
+    }
+  }
+  $\link$
+  \codebox{
+    \framebox{
+      \codebox{
+        \underline{$\subname{Enc}_{CTR}(k, m_{1R}||...||m_{lR}):$} \\
+        \> $r \gets \bits^{blen}$ \\
+        \> $c_0 := r$ \\
+        \> for $i = 1$ to $l$: \\
+        \> \> $c_i := F(k, m_{iR}||r)$ \\
+        \> \> $r := r + 1 \% 2^{blen}$ \\
+        \> return $c_0 || ... || c_l$
+      }
+    }
+  }
+\end{center}
 
 \pagebreak
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Key Generation and Storage (`keygen`)
 
 ## Primitives
 
 placeholder
+
+## Shoving this here for now sorry
+
+begin{center}
+  \codebox{
+    \framebox{
+      \codebox{
+        $m_{1}||...||m_{l} :=$ DecStore \\
+        $c_{0}||...||c_{l} :=$ EncStore
+      }
+      \qquad
+      \codebox{
+        \underline{EncStore (k):} \\
+        \> $c_{0}||...||c_{l} := \subname{Enc}_{CTR}(k, m_{1}||...||m_{l})$ \\
+        \> return $c_{0}||...||c_{l}$
+      }
+      \qquad
+      \codebox{
+        \underline{DecStore(k):} \\
+        \> $m_{1}||...||m_{l} := \subname{Dec}_{CTR}(k, c_{0}||...||c_{l})$ \\
+        \> return $m_{1}||...||m_{l}$
+      }
+    }
+  }
+\end{center}
 
 ## Formal Scheme Definition
 
