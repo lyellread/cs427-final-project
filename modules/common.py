@@ -86,7 +86,7 @@ def pad(msg: list, length: int) -> list:
 
     # Assert that our last message - be it new block or modified last block - is
     #   of length length.
-    assert len(msg[-1]) == length, , "Internal Error: pad() failed to properly pad the provided message."
+    assert len(msg[-1]) == length, "Internal Error: pad() failed to properly pad the provided message."
 
     return msg
 
