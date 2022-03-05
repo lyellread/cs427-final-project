@@ -6,6 +6,7 @@ author:
   - Lyell Read
 date: Winter 2022
 
+colorlinks: true
 header-includes:
   - \include{../macros.tex}
 ---
@@ -165,14 +166,43 @@ This Master Key will be stored on the machine, encrypted. The encryption and dec
 
 EncKey() begins with Pass2Key(), where it will prompt the user for the password, salt it, and then return the SHA-256 hash.  EncKey will compare this hash with the stored, correct hash. If they do not match (it is the wrong password), then an error is returned. Otherwise, EncKey will call the CTR mode, using the hashed password as a key/seed to the PRP F.
 
-## Encryption and Decryption
+## Encryption and Decryption of the Key Store
 
-hee ho
+\begin{center}
+  \codebox{
+    \framebox{
+      \codebox{
+        $m_{1}||...||m_{l} :=$ DecStore \\
+        $c_{0}||...||c_{l} :=$ EncStore
+      }
+      \qquad
+      \codebox{
+        \underline{EncStore (k):} \\
+        \> $c_{0}||...||c_{l} := \subname{Enc}_{CTR}(k, m_{1}||...||m_{l})$ \\
+        \> return $c_{0}||...||c_{l}$
+      }
+      \qquad
+      \codebox{
+        \underline{DecStore(k):} \\
+        \> $m_{1}||...||m_{l} := \subname{Dec}_{CTR}(k, c_{0}||...||c_{l})$ \\
+        \> return $m_{1}||...||m_{l}$
+      }
+    }
+  }
+\end{center}
 
 \pagebreak
 
 # Security Proofs
 
-gg
+We will prove that the main security function of our key manager `EncKey` is secure against chosen plaintext attacks (via having CPA$ security) and against chosen ciphertext attacks (via having CCA$ security).
+
+## CPA$ Security
+
+g
+
+## CCA$ Security
+
+g
 
 \pagebreak
