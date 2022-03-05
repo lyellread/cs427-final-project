@@ -7,7 +7,7 @@ def keygen(keyfile):
     logging.debug(f"Creating keyfile '{keyfile}'")
 
     # Check that we are not overwriting a key file
-    assert not os.path.exists(keyfile)
+    assert not os.path.exists(keyfile), f"Keyfile {keyfile} exists already, and would be overwritten."
 
     # Get user password input
     key_password = getpass.getpass(prompt="Password: ")
@@ -19,7 +19,8 @@ def keygen(keyfile):
     key = common.get_random_bytes(common.LAMBDA)
     key += common.hash(key)
 
-    assert len(key) == 2 * common.LAMBDA
+    # Check that the key length is as expected.
+    assert len(key) == 2 * common.LAMBDA, "Internal Error: Length of key and hash is not as expected."
 
     # Encrypt key using hash of the user password
     encrypted_key = common.encrypt(password_hash, key)

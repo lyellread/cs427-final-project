@@ -19,13 +19,13 @@ def prp(key: bytes, msg: bytes) -> bytes:
     """
 
     # Assert the input lengths are correct
-    assert len(key) == LAMBDA and len(msg) == LAMBDA
+    assert len(key) == LAMBDA and len(msg) == LAMBDA, "Internal Error: Arguments to prp() are of incorrect lengths"
 
     # Use AES as the PRP to encrypt one block of msg
     ctx = bytes(pyaes.AES(key).encrypt(list(msg)))
 
     # Check that the output length of the PRP is of block length
-    assert len(ctx) == LAMBDA
+    assert len(ctx) == LAMBDA, "Internal Error: Output of prp() is not of correct length."
 
     return ctx
 
@@ -54,7 +54,7 @@ def pad(msg: list, length: int) -> list:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
 
-    assert len(msg[-1]) <= length
+    assert len(msg[-1]) <= length, "Internal Error: Invalid message provided to pad()"
 
     # Calculate the amount that msg[-1] is under length
     padding_amount = length - len(msg[-1])
@@ -86,7 +86,7 @@ def pad(msg: list, length: int) -> list:
 
     # Assert that our last message - be it new block or modified last block - is
     #   of length length.
-    assert len(msg[-1]) == length
+    assert len(msg[-1]) == length, , "Internal Error: pad() failed to properly pad the provided message."
 
     return msg
 
@@ -208,7 +208,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     """
 
     # Check that the ciphertext is valid length
-    assert len(ctx) % LAMBDA == 0
+    assert len(ctx) % LAMBDA == 0, "Internal Error: Ciphertext provided to decrypt is not an even number of blocks."
 
     # Parse ctx into blocks.
     c = []
