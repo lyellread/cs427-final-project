@@ -4,6 +4,7 @@ Common cryptographic helper functions, like XORing byte strings.
 
 import os
 import pyaes
+import hashlib
 import logging
 
 # lambda aka block size
@@ -234,3 +235,8 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
 
     # Join array into a string of bytes for return.
     return b"".join(m)
+
+
+def hash(msg: bytes) -> bytes:
+    # stubbed
+    return hashlib.md5(msg).digest()
