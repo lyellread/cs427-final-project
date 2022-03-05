@@ -4,18 +4,19 @@
 noise - Nice 'Ol Interactive Stream Encryption
 
 Usage:
-    noise keygen KEYFILE [-v]
-    noise encrypt INFILE OUTFILE --key=<keyfile> [-v]
-    noise decrypt INFILE OUTFILE --key=<keyfile> [-v]
+    noise keygen [-v] [KEYFILE]
+    noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
+    noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
 
 Options:
     -h --help           Show this help message.
     -v --verbose        Show debug output.
 
     keygen              Generate a new encryption key.
-    encrypt, decrypt    Encrypt or decrypt <infile> to <outfile>.
-                        Use - as the file for stdin and/or stdout.
+    encrypt, decrypt    Encrypt or decrypt INFILE to OUTFILE.
     -k --key KEYFILE    Key to use when encrypting or decrypting a file.
+
+    With no FILEs specified, or when FILEs are -, use stdin/stdout.
 """
 
 from docopt import docopt
@@ -42,8 +43,13 @@ if __name__ == "__main__":
     # stdin/out specified?
     if ARGS["INFILE"] == "-":
         ARGS["INFILE"] = sys.stdin.fileno()
-    # stdin/out specified?
     if ARGS["OUTFILE"] == "-":
+        ARGS["OUTFILE"] = sys.stdout.fileno()
+
+    # no files given?
+    if ARGS["INFILE"] is None and ARGS["OUTFILE"] is None:
+        ARGS["INFILE"] = sys.stdin.fileno()
+    if ARGS["OUTFILE"] is None:
         ARGS["OUTFILE"] = sys.stdout.fileno()
 
     if ARGS["keygen"]:
