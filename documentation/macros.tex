@@ -14,19 +14,35 @@
 % indistinguishability operator
 % http://tex.stackexchange.com/questions/22168/triple-approx-and-triple-approx-with-a-straight-middle-line
 \newcommand{\indist}{  \mathrel{\vcenter{\offinterlineskip
-  \hbox{$\sim$}\vskip-.35ex\hbox{$\sim$}\vskip-.35ex\hbox{$\sim$}}}}
+    \hbox{$\sim$}\vskip-.35ex\hbox{$\sim$}\vskip-.35ex\hbox{$\sim$}}}}
 \renewcommand{\cong}{\indist}
 
 
+\newcommand{\?}{\stackrel{?}{=}}
+\newcommand{\xor}{\oplus}
+\newcommand{\union}{\cup}
 
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\D}{\mathcal{D}}
 \newcommand{\K}{\mathcal{K}}
 \newcommand{\M}{\mathcal{M}}
-\newcommand{\C}{\mathcal{C}}
+\newcommand{\T}{\mathcal{T}}
 \newcommand{\Z}{\mathbb{Z}}
+
+\newcommand{\Seen}{\mathcal{S}}
+
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\mb}[1]{\mathbb{#1}}
 
 \newcommand{\Enc}{\text{\sf Enc}}
 \newcommand{\Dec}{\text{\sf Dec}}
 \newcommand{\KeyGen}{\text{\sf KeyGen}}
+
+\newcommand{\Eavesdrop}{\subname{Eavesdrop}}
+\newcommand{\MAC}{\subname{MAC}}
+\newcommand{\Encrypt}{\subname{Encrypt}}
+\newcommand{\Decrypt}{\subname{Decrypt}}
 
 % fancy script L
 \usepackage[mathscr]{euscript}
@@ -46,17 +62,19 @@
 \definecolor{highlighttextcolor}{HTML}{000000}
 \definecolor{bitcolor}{HTML}{a91616}
 
+%% comments
+\newcommand{\comment}[1]{\sf \color{gray} #1}
 
 %%% boxes for writing libraries/constructions
 \usepackage{varwidth}
 
 \newcommand{\codebox}[1]{%
-        \begin{varwidth}{\linewidth}%
-        \begin{tabbing}%
-            ~~~\=\quad\=\quad\=\quad\=\kill % initialize tabstops
-            #1
-        \end{tabbing}%
-        \end{varwidth}%
+    \begin{varwidth}{\linewidth}%
+    \begin{tabbing}%
+        ~~~\=\quad\=\quad\=\quad\=\kill % initialize tabstops
+        #1
+    \end{tabbing}%
+    \end{varwidth}%
 }
 \newcommand{\titlecodebox}[2]{%
     \fboxsep=0pt%
@@ -70,6 +88,7 @@
     }
 }
 \newcommand{\fcodebox}[1]{%
+    \fboxsep=3pt%
     \framebox{\codebox{#1}}%
 }
 \newcommand{\hlcodebox}[1]{%
@@ -87,6 +106,12 @@
     }
 }
 
+\newcommand{\olfcodebox}[1]{%
+    \colorbox{highlightcolor}{\fcodebox{#1}}%
+}
+\newcommand{\oltitlecodebox}[2]{%
+    \colorbox{highlightcolor}{\titlecodebox{#1}{#2}}%
+}
 
 %% highlighting
 \newcommand{\basehighlight}[1]{\colorbox{highlightcolor}{\color{highlighttextcolor}#1}}
@@ -96,11 +121,25 @@
     \hspace*{-\fboxsep}\basehighlight{#1}%
 %}
 }
+\newcommand{\hl}[1]{\highlightline{#1}}
+\newcommand{\mhl}[1]{\mathhighlight{#1}}
+\newcommand{\hlm}[1]{\mathhighlight{#1}}
 
 %% bits
 \newcommand{\bit}[1]{\textcolor{bitcolor}{\texttt{\upshape #1}}}
 \newcommand{\bits}{\{\bit0,\bit1\}}
 
+\newcommand{\zerol}{\bit{0}^\lambda}
+\newcommand{\onel}{\bit{1}^\lambda}
+
+\newcommand{\err}{\bit{err }}
+
+% minipage caption macro to put proof step description next to step
+\newcommand{\desc}[1]{
+    \begin{minipage}{0.3\textwidth}
+        #1
+    \end{minipage}
+}
 
 % \begin{document}
 
