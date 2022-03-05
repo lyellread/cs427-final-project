@@ -4,6 +4,8 @@ Common cryptographic helper functions, like XORing byte strings.
 
 import os
 
+import pyaes
+
 # lambda aka block size
 LAMBDA_BITS = 128  # book uses lambda as # of bits
 LAMBDA = LAMBDA_BITS / 8  # but bytestrings are in bytes
@@ -25,10 +27,11 @@ def hash(m: bytes) -> bytes:
     pass
 
 
-# seed for PRF
-# TODO: should this be done in _main_/etc and passed in instead of a constant?
-SALT = os.urandom(LAMBDA)
+def prp(key: bytes, msg: bytes) -> bytes:
+    # this uses AES as a PRP. Works on LAMBDA-length byte strings.
 
+    # PRF / PRPs work on $\bits^\lambda * \bits^lambda -> \bits^\lambda$
+    # so make sure inputs are the right size
+    assert len(key) == LAMBDA and len(msg) == LAMBDA
 
-def prf(s: bytes, x: bytes) -> bytes:
-    pass
+    return pyaes.AES(key).encrypt(list(msg))

@@ -13,6 +13,9 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v2
 
+      - name: Pull Docker image
+        run: docker pull detjensrobert/arch-pandoc
+
       - name: Build documentation via Docker image
         run: >
           find -name '*.md' |
