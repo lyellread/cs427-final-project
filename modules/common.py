@@ -23,7 +23,7 @@ def prp(key: bytes, msg: bytes) -> bytes:
 
 def xor(m: bytes, k: bytes) -> bytes:
     if len(m) != len(k):
-        raise Exception("xor lengths mismatched")
+        raise Exception(f"xor lengths mismatch")
 
     return bytes(a ^ b for a, b in zip(m, k))
 

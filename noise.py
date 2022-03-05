@@ -4,22 +4,23 @@
 noise - Nice 'Ol Interactive Stream Encryption
 
 Usage:
-    noise keygen <keyfile> [-v]
-    noise encrypt <infile> <outfile.noise> --key=<keyfile> [-v]
-    noise decrypt <infile.noise> <outfile> --key=<keyfile> [-v]
+    noise keygen KEYFILE [-v]
+    noise encrypt INFILE OUTFILE --key=<keyfile> [-v]
+    noise decrypt INFILE OUTFILE --key=<keyfile> [-v]
 
 Options:
-    -h --help         Show this help message.
-    -v --verbose      Show debug output.
+    -h --help           Show this help message.
+    -v --verbose        Show debug output.
 
-    keygen            Generate a new encryption key.
-    encrypt, decrypt  Encrypt or decrypt <infile> to <outfile>.
-                      Use - for stdin or stdout.
-    -k --key KEYFILE  Key to use when encrypting or decrypting a file.
+    keygen              Generate a new encryption key.
+    encrypt, decrypt    Encrypt or decrypt <infile> to <outfile>.
+                        Use - as the file for stdin and/or stdout.
+    -k --key KEYFILE    Key to use when encrypting or decrypting a file.
 """
 
 from docopt import docopt
 import logging
+import sys
 
 from modules import encrypt, keygen
 
@@ -36,9 +37,16 @@ if __name__ == "__main__":
 
     logging.debug(f"args: {ARGS}")
 
+    # stdin/out specified?
+    if ARGS["INFILE"] == "-":
+        ARGS["INFILE"] = sys.stdin.fileno()
+    # stdin/out specified?
+    if ARGS["OUTFILE"] == "-":
+        ARGS["OUTFILE"] = sys.stdout.fileno()
+
     if ARGS["keygen"]:
-        keygen.keygen(ARGS["<keyfile>"])
+        keygen.keygen(ARGS["KEYFILE"])
     elif ARGS["encrypt"]:
-        encrypt.enc(ARGS["--key"], ARGS["<infile>"], ARGS["<outfile.noise>"])
+        encrypt.enc(ARGS["--key"], ARGS["INFILE"], ARGS["OUTFILE"])
     elif ARGS["decrypt"]:
-        encrypt.dec(ARGS["--key"], ARGS["<infile.noise>"], ARGS["<outfile>"])
+        encrypt.dec(ARGS["--key"], ARGS["INFILE"], ARGS["OUTFILE"])
