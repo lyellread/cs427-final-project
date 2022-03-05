@@ -9,12 +9,13 @@ Usage:
     noise decrypt <infile.noise> <outfile> --key=<keyfile> [-v]
 
 Options:
-    keygen            Generate a new encryption key
-    encrypt           Encrypt the file <infile> to <outfile.noise>
-    decrypt           Decrypt the file <infile.noise> to <outfile>
-    -h --help         Show this help message
-    -v --verbose      Show debug output
-    -k --key KEYFILE  Key to use when encrypting or decrypting a file
+    -h --help         Show this help message.
+    -v --verbose      Show debug output.
+
+    keygen            Generate a new encryption key.
+    encrypt, decrypt  Encrypt or decrypt <infile> to <outfile>.
+                      Use - for stdin or stdout.
+    -k --key KEYFILE  Key to use when encrypting or decrypting a file.
 """
 
 from docopt import docopt
@@ -22,10 +23,7 @@ import logging
 
 from modules import encrypt, keygen
 
-# from modules import common # testing
-
 if __name__ == "__main__":
-    # common.test()
 
     ARGS = docopt(__doc__)
 

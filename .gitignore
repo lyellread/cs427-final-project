@@ -2,6 +2,10 @@ latex.out
 texout
 *.pdf
 
+# encrypted files
+key
+*.noise
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
