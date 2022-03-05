@@ -7,9 +7,11 @@ Usage:
     noise keygen [-v] [KEYFILE]
     noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
+    noise --test
 
 Options:
     -h --help           Show this help message.
+    -t --test           Test internal Encrypt and Decrypt algorithms
     -v --verbose        Show debug output.
 
     keygen              Generate a new encryption key.
@@ -25,8 +27,6 @@ import sys
 
 from modules import encrypt, keygen
 
-# from modules import common  # testing
-
 if __name__ == "__main__":
 
     ARGS = docopt(__doc__)
@@ -35,6 +35,12 @@ if __name__ == "__main__":
         level = logging.DEBUG
     else:
         level = logging.WARN
+
+    if ARGS["--test"]:
+        from modules import common  # testing
+
+        common.test()
+        exit()
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
 

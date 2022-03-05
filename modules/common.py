@@ -52,19 +52,22 @@ def get_random_bytes(l):
 def pad(msg: list, length: int) -> list:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
+
+    assert len(msg[-1]) <= length
+
     # Calculate the amount that msg[-1] is under length
-    padding_offset = len(msg[-1]) % length
+    padding_amount = length - len(msg[-1])
 
     # Check what type of padding is needed
-    if padding_offset != 0:
+    if padding_amount != 0:
         # Add padding to last block
         # Append the proper number of zero bytes (one less than the total
         #   number of bytes of padding required)
-        msg[-1] += b"\x00" * (length - padding_offset - 1)
+        msg[-1] += b"\x00" * (padding_amount - 1)
 
         # Set the last byte appended to be equal to the number of bytes of
         #   padding including this byte that have been used)
-        msg[-1] += (length - padding_offset).to_bytes(1, "big")
+        msg[-1] += (padding_amount).to_bytes(1, "big")
 
     else:
         # Add whole new block. Create an empty bytestring
@@ -115,8 +118,8 @@ def test():
     print(f"Testing with message {msg.hex()} and key {key.hex()}")
     ctx = encrypt(key, msg)
     print(f"Encrypted message {ctx.hex()}")
-    msg = decrypt(key, ctx)
-    print(f"Decrypted message {msg.hex()}")
+    out = decrypt(key, ctx)
+    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
 
     print(" === TEST 2 === ")
     # Many short of one block
@@ -125,8 +128,8 @@ def test():
     print(f"Testing with message {msg.hex()} and key {key.hex()}")
     ctx = encrypt(key, msg)
     print(f"Encrypted message {ctx.hex()}")
-    msg = decrypt(key, ctx)
-    print(f"Decrypted message {msg.hex()}")
+    out = decrypt(key, ctx)
+    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
 
     print(" === TEST 3 === ")
     # One short of a full block
@@ -135,8 +138,8 @@ def test():
     print(f"Testing with message {msg.hex()} and key {key.hex()}")
     ctx = encrypt(key, msg)
     print(f"Encrypted message {ctx.hex()}")
-    msg = decrypt(key, ctx)
-    print(f"Decrypted message {msg.hex()}")
+    out = decrypt(key, ctx)
+    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
 
 
 def encrypt(key: bytes, msg: bytes) -> bytes:
