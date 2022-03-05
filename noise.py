@@ -43,8 +43,7 @@ if __name__ == "__main__":
         exit()
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
-
-    logging.debug(f"args: {ARGS}")
+    logging.debug(f"User-supplied command line arguments: {ARGS}")
 
     # stdin/out specified?
     if ARGS["INFILE"] == "-":

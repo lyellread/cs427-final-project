@@ -2,4 +2,4 @@ import logging
 
 
 def keygen(keyfile, passphrase=None):
-    logging.debug(f"creating key '{keyfile}' with passphrase '{passphrase}'")
+    logging.debug(f"Creating key '{keyfile}' with passphrase '{passphrase}'")
