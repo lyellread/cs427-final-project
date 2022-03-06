@@ -25,7 +25,7 @@ header-includes:
 
 # Abstract
 
-placeholder
+To demonstrate proficient Cryptographic knowledge gained from this course, our group designed a NOISE: Nice Ol' Interactive Stream Encryption. This is basically a key manager with built in encryption/decryption of messages with the keys within the manager. This project demonstrated: knowledge of the different definitions of security for different components (encryption schemes, pseudorandom permutations, and compression functions), ability to research further on what was taught in class (to find a suitable PRP, which ended up being AES), ability to write proofs for our cryptographic scheme, and ability to implement in code and test our cryptographic scheme. We wrote this program in Python and utilized a number of different libraries: PyAES, getpass, and docopt.
 
 \pagebreak
 
