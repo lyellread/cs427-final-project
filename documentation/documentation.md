@@ -27,6 +27,8 @@ header-includes:
 
 To demonstrate proficient Cryptographic knowledge gained from this course, our group designed a NOISE: Nice Ol' Interactive Stream Encryption. This is basically a key manager with built in encryption/decryption of messages with the keys within the manager. This project demonstrated: knowledge of the different definitions of security for different components (encryption schemes, pseudorandom permutations, and compression functions), ability to research further on what was taught in class (to find a suitable PRP, which ended up being AES), ability to write proofs for our cryptographic scheme, and ability to implement in code and test our cryptographic scheme. We wrote this program in Python and utilized a number of different libraries: PyAES, getpass, and docopt.
 
+**NOTE:** Our Python scripts have a few small bugs that we were unable to iron out prior to submission, and will be broken if you try to run them. Please feel free to read through the code however! We started implementing our modified CTR but ran into complications. We have decided to use regular non-CCA secure CTR and add a MAC to ensure CCA security, but this has not been implemented yet.
+
 \pagebreak
 
 # Stream Encryption and Decryption (`enc`, `dec`)
@@ -381,4 +383,4 @@ Additionally, we have already proved that our modified $\subname{ENC}_{CTR}$ has
 
 # Conclusion and Discussion
 
-placeholder
+In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be NOISE. 
