@@ -31,79 +31,84 @@ placeholder
 
 # Stream Encryption and Decryption (`enc`, `dec`)
 
-placeholder
+These define the Encryption and Decryption algorithms used by the program both to encrypt and decrypt the Master Key, and to encrypt and decrypt messages *with* the Master Key.
 
 ## Primitives
 
-Our design utilizes $F$, a Block Cipher (PRP). $F$ will be the AES block cipher with a 256-bit key. This key will be derived using a common hashing algorithm, $\subname{sha256}$ based on the text password entered by the user.
+Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). The key to the block cipher will be derived by hashing the text password entered by the user (hence, it must have 128-bit output).
 
-- https://www.geeksforgeeks.org/advanced-encryption-standard-aes/
-- https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
+\
 
 \begin{center}
-\fcodebox{
-  \codebox {
-    \> klen = 256 \\
-    \> TODO: types declared here
+  \fcodebox{
+    \codebox{
+      \> klen = 128 \\
+      \> \\
+      \underline{$F_{AES}(k, d):$} \\
+      \> BLACK BOX \\
+      \> \\
+      \underline{$F_{AES}^{-1}(k, d):$} \\
+      \> BLACK BOX
+    }
   }
-  \qquad
-  \codebox{
-    \underline{$F_{AES}(k, d)$:} \\
-    \> TODO
+\end{center}
+
+\
+
+The hash we will be using is a Davies-Meyer compression function with our AES block cipher, $F$. A Davies-Meyer compression function functionally turns a block cipher into a hashing function. No key is needed by the scheme; the "keys" are the blocks of the message itself. The algorithm is defined below:
+
+\
+
+\begin{center}
+  \fcodebox{
+    \codebox{
+      \> blen = 128 \\
+      \> \\
+      \underline{$\subname{Hash}_{D-M}(m_1||...||m_l$):} \\
+      \> $h := \{0\}^{blen}$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $h := F(m_i, h) \oplus h$ \\
+      \> return $h$
+    }
   }
-}
 \end{center}
 
 ## Formal Scheme Definition
 
-Our symmetric encryption mode will be a modified CTR mode.
+Our symmetric encryption mode will be a modified CTR mode. For the Decryption algorithm, we don't really need to have $r$ or $c_0$ as it's simply concatenated with $m_i$ but we have kept it in the definition to better show how our modification resembles true CTR mode. Additionally, $r$ could be used to verify that the decryption was successful, as the resulting block would be $m_i||r$.
 
 \begin{center}
-\fcodebox{
-  \codebox {
-    \> blen = 256 \\
-    \> TODO: types declared here
+  \fcodebox{
+    \codebox{
+      \> blen = 128
+    }
+    \qquad
+    \codebox{
+      \underline{$\subname{Enc}_{CTR}(k, m_1||...||m_l)$:} \\
+      \> $r \gets \bits^{blen}$ \\
+      \> $c_0 := r$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $c_i := F(k, m_i||r)$ \\
+      \> \> $r := r + 1 \% 2^{blen}$ \\
+      \> return $c_0 || ... || c_l$
+    }
+    \qquad
+    \codebox{
+      \underline{$\subname{Dec}_{CTR}(k, c_0||...||c_l)$:} \\
+      \> $r := c_0$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $m_i := F^{-1}(k, c_i)$ [blen:] \\
+      \> \> $r := r + 1 \% 2^{blen}$ \\
+      \> return $m_1||...||m_l$
+    }
   }
-  \qquad
-  \codebox{
-    \underline{$\subname{Enc}_{CTR}(k, m_1||...||m_l)$:} \\
-    \> $r \gets \bits^{blen}$ \\
-    \> $c_0 := r$ \\
-    \> for $i = 1$ to $l$: \\
-    \> \> $c_i := F(k, m_i||r)$ \\
-    \> \> $r := r + 1 \% 2^{blen}$ \\
-    \> return $c_0 || ... || c_l$
-  }
-  \qquad
-  \codebox{
-    \underline{$\subname{Dec}_{CTR}(k, c_0||...||c_l)$:} \\
-    \> TODO
-  }
-}
-\end{center}
-
-The hashing function we will use is SHA-256.
-
-\begin{center}
-\fcodebox{
-  \codebox {
-    \> klen = 256 \\
-    \> TODO: types declared here
-  }
-  \qquad
-  \codebox{
-    \underline{$\subname{Hash}_{SHA-256}(m)$:} \\
-    \> TODO
-  }
-}
 \end{center}
 
 ## Main
 
 ```py
-from getpass import getpass
 
-klen, blen = 256
+klen, blen = 128
 
 # Stored persistently, in file or otherwise
 s = ''
@@ -133,8 +138,6 @@ Main():
   # k is not persistant on shutdown
 
 ```
-
-getpass: https://stackoverflow.com/questions/43673886/python-2-7-how-to-get-input-but-dont-show-keys-entered/43673912
 
 ## Security Proof and Reasoning
 
@@ -355,16 +358,7 @@ Let's inline the whole linked function, and re-consider the right library.
   }
 \end{center}
 
-Here we can see in this function, the left and right libraries are indistinguishable. For any calling program $A$, it will not be able to distinguish between the two libraries - aka, it will not be able to obtain any partial information from the scheme.
-
-
-
-
-
-
-
-
-
+Here we can see in this function, the left and right libraries are indistinguishable. For any calling program $A$, it will not be able to distinguish between the two libraries - aka, it will not be able to obtain any partial information from the scheme. Therefore, the scheme has CCA security, and by extension, has CPA security.
 
 \pagebreak
 
