@@ -104,41 +104,6 @@ Our symmetric encryption mode will be a modified CTR mode. For the Decryption al
   }
 \end{center}
 
-## Main
-
-```py
-
-klen, blen = 128
-
-# Stored persistently, in file or otherwise
-s = ''
-K = ''
-H = ''
-
-Init():
-  k = KeyGen()
-  s = KeyGen()
-  print("You will make a new password.")
-  H = Pass2Key()
-  print("You will enter the password again.")
-  K = EncKey()
-  print("Vault has been initialized.")
-
-Main():
-  if:
-    Init()
-
-  k = DecKey()
-  # Decrypt vault with k
-  print("Vault has been decrypted.")
-
-  #Encryption and Decryption behavior here
-
-  # Re-encrypt vault files with k
-  # k is not persistant on shutdown
-
-```
-
 ## Security Proof and Reasoning
 
 We will prove that the encryption scheme of our key manager, a modified CTR mode, has security against chosen ciphertext attacks. We assume that F is a secure PRP.
