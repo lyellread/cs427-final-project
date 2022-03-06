@@ -1,6 +1,8 @@
-import logging, os
-from modules import common
 import getpass
+import logging
+import os
+
+from modules import common
 
 
 def keygen(keyfile):
@@ -46,8 +48,8 @@ def decrypt_key(keyfile):
     # Decrypt and check key
     key = common.decrypt(password_hash, encrypted_key)
     if key[common.LAMBDA :] != common.hash(key[: common.LAMBDA]):
-        logging.error("Invalid Password or Corrupted Keyfile. Breaking.")
-        exit()
+        logging.error("Invalid password or corrupted key")
+        exit(1)
 
     else:
         logging.debug("Key decrypted successfully")
