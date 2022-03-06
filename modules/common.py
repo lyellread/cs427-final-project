@@ -2,13 +2,14 @@
 Common cryptographic helper functions, like XORing byte strings.
 """
 
-import os
-import pyaes
-import hashlib
 import logging
+import os
+from math import ceil
+
+import pyaes
 
 # lambda aka block size
-LAMBDA_BITS = 128  # book uses lambda as # of bits
+LAMBDA_BITS = 128  # AES is defined in terms of bit length
 LAMBDA = LAMBDA_BITS // 8  # but bytestrings are in bytes
 
 
@@ -37,20 +38,42 @@ def xor(m: bytes, k: bytes) -> bytes:
 
     # Check that the arguments are the same length.
     if len(m) != len(k):
-        raise Exception(f"Arguments to XOR are not the same length.")
+        raise Exception("Arguments to XOR are not the same length.")
 
     return bytes(a ^ b for a, b in zip(m, k))
 
 
-def get_random_bytes(l):
+def get_random_bytes(len: int) -> bytes:
     """
-    Uses /dev/urandom to get l random bytes
+    Uses /dev/urandom to get len random bytes
     """
 
-    return os.urandom(l)
+    return os.urandom(len)
 
 
-def pad(msg: list, length: int) -> list:
+def chunk_blocks(msg: bytes) -> list[bytes]:
+    """
+    Split `msg` into LAMBDA-length chunks (blocks).
+
+    This does *not* pad the last block.
+    """
+
+    m = []
+
+    if len(msg) == 0:
+        # if m is empty string. append empty string to list
+        m.append(b"")
+    else:
+        # Chunk message into LAMBDA-length blocks if not empty
+        num_chunks = ceil(len(msg) / LAMBDA)
+        for x in range(num_chunks):
+            m.append(msg[:LAMBDA])
+            msg = msg[LAMBDA:]
+
+    return m
+
+
+def pad(msg: list[bytes], length: int) -> list[bytes]:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
 
@@ -91,7 +114,7 @@ def pad(msg: list, length: int) -> list:
     return msg
 
 
-def unpad(msg: list, length: int) -> list:
+def unpad(msg: list[bytes], length: int) -> list[bytes]:
 
     # print(f"[Unpad] : Pre-unpadding msg: {msg}")
 
@@ -109,38 +132,6 @@ def unpad(msg: list, length: int) -> list:
     # print(f"[Unpad] : Post-unpadding msg: {msg}")
 
     return msg
-
-
-def test():
-    print(" === TEST 1 === ")
-    # Block aligned
-    msg = b"AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDD"
-    key = get_random_bytes(LAMBDA)
-    print(f"Testing with message {msg.hex()} and key {key.hex()}")
-    ctx = encrypt(key, msg)
-    print(f"Encrypted message {ctx.hex()}")
-    out = decrypt(key, ctx)
-    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
-
-    print(" === TEST 2 === ")
-    # Many short of one block
-    msg = b"B"
-    key = get_random_bytes(LAMBDA)
-    print(f"Testing with message {msg.hex()} and key {key.hex()}")
-    ctx = encrypt(key, msg)
-    print(f"Encrypted message {ctx.hex()}")
-    out = decrypt(key, ctx)
-    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
-
-    print(" === TEST 3 === ")
-    # One short of a full block
-    msg = b"AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBCCCCCCCCCCCCCCC"
-    key = get_random_bytes(LAMBDA)
-    print(f"Testing with message {msg.hex()} and key {key.hex()}")
-    ctx = encrypt(key, msg)
-    print(f"Encrypted message {ctx.hex()}")
-    out = decrypt(key, ctx)
-    print(f"Decrypted message {out.hex()} \nSuccessful: {msg == out}")
 
 
 def encrypt(key: bytes, msg: bytes) -> bytes:
@@ -161,14 +152,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
     """
 
     # Parse msg into blocks.
-    m = []
-    # Get all LAMBDA-length blocks extracted
-    for x in range(len(msg) // LAMBDA):
-        m.append(msg[:LAMBDA])
-        msg = msg[LAMBDA:]
-    # Check and extract a trailing, non-LAMBDA-length block
-    if len(msg) % LAMBDA != 0:
-        m.append(msg)
+    m = chunk_blocks(msg)
 
     # Pad the array of blocks
     m = pad(m, LAMBDA)
@@ -185,7 +169,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
         # )
         ci = xor(prp(key, r), m[i])
         c.append(ci)
-        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Recombine array into a string of bytes.
     return b"".join(c)
@@ -211,12 +195,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     assert len(ctx) % LAMBDA == 0, "Internal Error: Ciphertext provided to decrypt is not an even number of blocks."
 
     # Parse ctx into blocks.
-    c = []
-    # ctx is guaranteed to be a whole number of blocks, therefore no need to check
-    #   for a trailing block of less than LAMBDA
-    for x in range(len(ctx) // LAMBDA):
-        c.append(ctx[:LAMBDA])
-        ctx = ctx[LAMBDA:]
+    c = chunk_blocks(ctx)
 
     # Decrypt the message block by block
     m = []
@@ -228,7 +207,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
         # )
         mi = xor(prp(key, r), c[i])
         m.append(mi)
-        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Remove padding from the array of blocks
     m = unpad(m, LAMBDA)
@@ -238,5 +217,26 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
 
 
 def hash(msg: bytes) -> bytes:
-    # stubbed
-    return hashlib.md5(msg).digest()
+    """
+    Return a LAMBDA-length hash of input `msg`
+
+    This uses the Davies-Meyer compression function with our AES PRP to build
+    a hash function out of a block cipher:
+
+    for i = 0 to length / LAMBDA:
+        H_i = F(m_i, H_i-1) XOR H_i-1
+    retun H_i
+    """
+
+    # Parse msg into blocks.
+    m = chunk_blocks(msg)
+
+    # Pad the array of blocks to ensure all are LAMBDA-length
+    m = pad(m, LAMBDA)
+
+    # perform davies-meyer: H_i = F(m_i, H_i-1) XOR H_i-1
+    h = b"\0" * LAMBDA  # initial hash value is 0
+    for m_i in m:
+        h = xor(prp(m_i, h), h)
+
+    return h

@@ -37,9 +37,10 @@ if __name__ == "__main__":
         level = logging.WARN
 
     if ARGS["--test"]:
-        from modules import common  # testing
+        from modules import test
 
-        common.test()
+        test.test_encrypt()
+        test.test_hash()
         exit()
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
