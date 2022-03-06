@@ -35,7 +35,7 @@ These define the Encryption and Decryption algorithms used by the program both t
 
 ## Primitives
 
-Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). The key to the block cipher will be derived by hashing the text password entered by the user (hence, it must have 128-bit output).
+Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). 
 
 \
 
@@ -49,26 +49,6 @@ Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block c
       \> \\
       \underline{$F_{AES}^{-1}(k, d):$} \\
       \> BLACK BOX
-    }
-  }
-\end{center}
-
-\
-
-The hash we will be using is a Davies-Meyer compression function with our AES block cipher, $F$. A Davies-Meyer compression function functionally turns a block cipher into a hashing function. No key is needed by the scheme; the "keys" are the blocks of the message itself. The algorithm is defined below:
-
-\
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> blen = 128 \\
-      \> \\
-      \underline{$\subname{Hash}_{D-M}(m_1||...||m_l$):} \\
-      \> $h := \{0\}^{blen}$ \\
-      \> for $i = 1$ to $l$: \\
-      \> \> $h := F(m_i, h) \oplus h$ \\
-      \> return $h$
     }
   }
 \end{center}
@@ -329,87 +309,69 @@ Here we can see in this function, the left and right libraries are indistinguish
 
 # Key Generation and Storage (`keygen`)
 
+These define the functions that handle generation and storage of the Master Key and the keys it protects. The Master Key is generated with function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
+
+This Master Key will be stored on the machine, with a hash and encrypted. The encryption and decryption of the Master Key is done in through the modded CTR mode. The hash of the key will be appended before being encrypted, which ensures that it has not been tampered with and that the password was correct.
+
 ## Primitives
 
-placeholder
+The primitives we need are the $F_{AES}$ block cipher that we identified earlier. The key to this block cipher will be derived by hashing the text password entered by the user (hence, it must have 128-bit output). The hash we will be using is a Davies-Meyer compression function with our same AES block cipher, $F$. A Davies-Meyer compression function functionally turns a block cipher into a hashing function. No key is needed by the scheme; the "keys" are the blocks of the message itself. The algorithm is defined below:
 
-## Shoving this here for now sorry
+\
 
 \begin{center}
   \fcodebox{
     \codebox{
-      $m_{1}||...||m_{l} :=$ DecStore \\
-      $c_{0}||...||c_{l} :=$ EncStore
-    }
-    \qquad
-    \codebox{
-      \underline{EncStore (k):} \\
-      \> $c_{0}||...||c_{l} := \subname{Enc}_{CTR}(k, m_{1}||...||m_{l})$ \\
-      \> return $c_{0}||...||c_{l}$
-    }
-    \qquad
-    \codebox{
-      \underline{DecStore(k):} \\
-      \> $m_{1}||...||m_{l} := \subname{Dec}_{CTR}(k, c_{0}||...||c_{l})$ \\
-      \> return $m_{1}||...||m_{l}$
+      \> blen = 128 \\
+      \> \\
+      \underline{$\subname{Hash}_{D-M}(m_1||...||m_l$):} \\
+      \> $h := \{0\}^{blen}$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $h := F(m_i, h) \oplus h$ \\
+      \> return $h$
     }
   }
 \end{center}
+
 
 ## Formal Scheme Definition
 
+The encrypted key and its hash will be kept in a file, and the decrypted key will be extracted and used internal to the program only. This is reflected below:
+
+\
+
 \begin{center}
-\fcodebox{
-  \codebox{
-    \> $k := DecKey()$ \\
-    \> \\
-    \> $s := KeyGen()$ \\
-    \> $H := Pass2Key()$ \\
-    \> $K := EncKey(h, k)$
+  \fcodebox{
+    \codebox{
+      \> KeyFile := KeyGen()
+    }
+    \qquad
+    \codebox{
+      \underline{KeyGen():} \\
+      \> $p :=$ getpass() \\
+      \> $ph := \subname{Hash}_{D-M}(p)$ \\
+      \> $k \gets \{0, 1\}^{\lambda}$ \\
+      \> $k += \subname{Hash}_{D-M}(k)$ \\
+      \> $E := \subname{Enc}_{CTR}(ph, k)$ \\
+      \> return $E$
+    }
+    \qquad
+    \codebox{
+      \underline{DecryptKey():} \\
+      \> $p :=$ getpass() \\
+      \> $ph := \subname{Hash}_{D-M}(p)$ \\
+      \> $k, kh := \subname{Dec}_{CTR}(h, KeyFile)$ \\
+      \> $keyH := \subname{Hash}_{D-M}(k)$ \\
+      \> if $kh \neq keyH$: \\
+      \> \> return $\err$ \\
+      \> return $k$
+    }
   }
-  \qquad
-  \codebox{
-    \underline{KeyGen():} \\
-    \> $k \gets \bits^{klen}$ \\
-    \> return $k$
-  }
-  \qquad
-  \codebox{
-    \underline{Pass2Key():} \\
-    \> $p := get\_passphrase()$ \\
-    \> $h := Hash_{SHA-256}(p||s)$ \\
-    \> return $h$
-  }
-  \qquad
-  \codebox{
-    \underline{EncKey(k):} \\
-    \> $h := H$ \\
-    \> $K := Enc_{CTR}(h, k)$ \\
-    \> return $K$
-  }
-}
-
-\fcodebox{
-  \codebox{
-    \underline{DecKey(K):} \\
-    \> $h := Pass2Key()$ \\
-    \> if $h \neq H$: \\
-    \> \> return $err$ \\
-    \> $k = Dec_{CTR}(h, K)$ \\
-    \> return $k$
-  }
-}
 \end{center}
-
-TODO: Define types and formalize scheme in tex
 
 ## Security Proof and Reasoning
 
-Here we define a library of functions that will handle the generation and storage of the Master Key that will be used to encrypt and decrypt the stored keys in the manager. The Master Key is generated with function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
-This Master Key will be stored on the machine, encrypted. The encryption and decryption of the Master Key will be done with a password and in the CTR mode, as shown in the remaining two functions, Pass2Key() and EncKey(). The correct, salted hash of the password will be stored alongside the encrypted Master Key.
-
-EncKey() begins with Pass2Key(), where it will prompt the user for the password, salt it, and then return the SHA-256 hash.  EncKey will compare this hash with the stored, correct hash. If they do not match (it is the wrong password), then an error is returned. Otherwise, EncKey will call the CTR mode, using the hashed password as a key/seed to the PRP F.
 
 # Conclusion and Discussion
 
