@@ -371,7 +371,13 @@ The encrypted key and its hash will be kept in a file, and the decrypted key wil
 
 ## Security Proof and Reasoning
 
+There are a number of components to these functions. 
 
+To transform the password into a key to use for encryption, we compute the Davies-Meyer hash of the password into 128-bit output. This we use as the key to encrypt our Master Key. 
+
+This key is not stored anywhere, and so is not vulnerable to pass-the-hash attack. Instead to check that the password is correct, the Master Key has a hash created of itself, and then appended to itself. The Master Key and its hash are encrypted together, so that when the password-hash is used as a key to decrypt the KeyFile, we know the password was correct because the resultant hash matches the key preceding it. In this way, the hash-then-encrypt method functions like an HMAC, ensuring both that the password is correct and that the KeyFile has not been tampered with.
+
+Additionally, we have already proved that our modified $\subname{ENC}_{CTR}$ has CCA security. If the password is ever changed on the Key Manager, this would mean that the "plaintext message" changes, and we are guaranteed that an attacker with access to the encrypted KeyFile couldn't obtain partial information about the Master Key.
 
 # Conclusion and Discussion
 
