@@ -7,7 +7,7 @@ Usage:
     noise keygen [-v] KEYFILE
     noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
-    noise --test
+    noise --test [-v]
 
 Options:
     -h --help           Show this help message.
@@ -36,15 +36,15 @@ if __name__ == "__main__":
     else:
         level = logging.WARN
 
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
+    logging.debug(f"User-supplied command line arguments: {ARGS}")
+
     if ARGS["--test"]:
         from modules import test
 
         test.test_encrypt()
         test.test_hash()
         exit()
-
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
-    logging.debug(f"User-supplied command line arguments: {ARGS}")
 
     # stdin/out specified?
     if ARGS["INFILE"] == "-":

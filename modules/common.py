@@ -51,9 +51,9 @@ def get_random_bytes(len: int) -> bytes:
     return os.urandom(len)
 
 
-def chunk_blocks(msg: bytes) -> list[bytes]:
+def chunk_blocks(msg: bytes, size: int) -> list[bytes]:
     """
-    Split `msg` into LAMBDA-length chunks (blocks).
+    Split `msg` into size-length chunks (blocks).
 
     This does *not* pad the last block.
     """
@@ -65,10 +65,10 @@ def chunk_blocks(msg: bytes) -> list[bytes]:
         m.append(b"")
     else:
         # Chunk message into LAMBDA-length blocks if not empty
-        num_chunks = ceil(len(msg) / LAMBDA)
-        for x in range(num_chunks):
-            m.append(msg[:LAMBDA])
-            msg = msg[LAMBDA:]
+        num_chunks = ceil(len(msg) / size)
+        for _ in range(num_chunks):
+            m.append(msg[:size])
+            msg = msg[size:]
 
     return m
 
@@ -152,7 +152,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
     """
 
     # Parse msg into blocks.
-    m = chunk_blocks(msg)
+    m = chunk_blocks(msg, LAMBDA)
 
     # Pad the array of blocks
     m = pad(m, LAMBDA)
@@ -195,7 +195,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     assert len(ctx) % LAMBDA == 0, "Internal Error: Ciphertext provided to decrypt is not an even number of blocks."
 
     # Parse ctx into blocks.
-    c = chunk_blocks(ctx)
+    c = chunk_blocks(ctx, LAMBDA)
 
     # Decrypt the message block by block
     m = []
@@ -229,7 +229,7 @@ def hash(msg: bytes) -> bytes:
     """
 
     # Parse msg into blocks.
-    m = chunk_blocks(msg)
+    m = chunk_blocks(msg, LAMBDA)
 
     # Pad the array of blocks to ensure all are LAMBDA-length
     m = pad(m, LAMBDA)
