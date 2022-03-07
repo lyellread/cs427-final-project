@@ -220,12 +220,12 @@ def hash(msg: bytes) -> bytes:
     """
     Return a LAMBDA-length hash of input `msg`
 
-    This uses the Davies-Meyer compression function with our AES PRP to build
-    a hash function out of a block cipher:
+    This uses the Davies-Meyer compression function with our AES PRP
+    to build a hash function out of a block cipher:
 
     for i = 0 to length / LAMBDA:
         H_i = F(m_i, H_i-1) XOR H_i-1
-    retun H_i
+    return H_i
     """
 
     # Parse msg into blocks.
@@ -240,3 +240,32 @@ def hash(msg: bytes) -> bytes:
         h = xor(prp(m_i, h), h)
 
     return h
+
+
+def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
+    """
+    Return a LAMBDA-length MAC tag of input `msg`
+
+    This uses CBC-MAC with our AES-based hash and PRP to construct a MAC
+    out of a PRF function:
+
+    for i = 0 to l - 1:
+        H_i = F(k, m_i XOR H_i-1)
+    return F(k_2, m_l XOR H_l-1
+    """
+
+    # Parse msg into blocks.
+    m = chunk_blocks(msg, LAMBDA)
+
+    # Input should be padded already
+    assert len(m) % LAMBDA == 0, 'Internal Error: input to MAC is incorrect length'
+
+    # keep last block for ecbc
+    last_block = m.pop()
+
+    # perform cbc: H_i = F(m_i, H_i-1) XOR H_i-1
+    t = b"\0" * LAMBDA  # initial iv value is 0
+    for m_i in m:
+        t = prp(key1, xor(t, m_i))
+
+    return prp(key2, xor(t, last_block))
