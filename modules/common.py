@@ -51,7 +51,7 @@ def get_random_bytes(len: int) -> bytes:
     return os.urandom(len)
 
 
-def chunk_blocks(msg: bytes, size: int) -> list[bytes]:
+def chunk_blocks(msg: bytes, size=LAMBDA) -> list[bytes]:
     """
     Split `msg` into size-length chunks (blocks).
 
@@ -127,7 +127,7 @@ def unpad(msg: list[bytes], length: int) -> list[bytes]:
 
     else:
         # We must manipulate the bytes of the last block
-        msg[-1] = msg[-1][: (-1 * padding_byte)]
+        msg[-1] = msg[-1][:-padding_byte]
 
     # print(f"[Unpad] : Post-unpadding msg: {msg}")
 
@@ -152,7 +152,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
     """
 
     # Parse msg into blocks.
-    m = chunk_blocks(msg, LAMBDA)
+    m = chunk_blocks(msg)
 
     # Pad the array of blocks
     m = pad(m, LAMBDA)
@@ -164,9 +164,10 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
     c.append(c0)
 
     for i in range(len(m)):
-        # logging.debug(
-        #     f"[Enc] : r:{r.hex()}, m[i]:{m[i].hex()}, key:{key.hex()}, Fk(r):{prp(key, r).hex()}, Fk(r) XOR m[i]:{xor(prp(key, r), m[i]).hex()}"
-        # )
+        # logging.debug(f"[Enc] : r:{r.hex()}, m[i]:{m[i].hex()}, key:{key.hex()}")
+        # logging.debug(f"[Enc] : lengths: r:{len(r)}, m[i]:{len(m[i])}, key:{len(key)}")
+        # logging.debug(f"[Enc] : Fk(r):{prp(key, r).hex()}, Fk(r) XOR m[i]:{xor(prp(key, r), m[i]).hex()}")
+
         ci = xor(prp(key, r), m[i])
         c.append(ci)
         r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
@@ -195,7 +196,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     assert len(ctx) % LAMBDA == 0, "Internal Error: Ciphertext provided to decrypt is not an even number of blocks."
 
     # Parse ctx into blocks.
-    c = chunk_blocks(ctx, LAMBDA)
+    c = chunk_blocks(ctx)
 
     # Decrypt the message block by block
     m = []
@@ -229,7 +230,7 @@ def hash(msg: bytes) -> bytes:
     """
 
     # Parse msg into blocks.
-    m = chunk_blocks(msg, LAMBDA)
+    m = chunk_blocks(msg)
 
     # Pad the array of blocks to ensure all are LAMBDA-length
     m = pad(m, LAMBDA)
@@ -254,11 +255,15 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     return F(k_2, m_l XOR H_l-1
     """
 
-    # Parse msg into blocks.
-    m = chunk_blocks(msg, LAMBDA)
+    # logging.debug(f"[MAC] : msg:{msg.hex()}, key:{key1.hex()},{key2.hex()}")
+    # logging.debug(f"[MAC] : lengths: msg:{len(msg)}, key:{len(key1)},{len(key2)}")
+    # logging.debug(f"[MAC] : len mod lambda: {len(msg) % LAMBDA}")
 
     # Input should be padded already
-    assert len(m) % LAMBDA == 0, 'Internal Error: input to MAC is incorrect length'
+    assert len(msg) % LAMBDA == 0, "Internal Error: input to MAC is incorrect length"
+
+    # Parse msg into blocks.
+    m = chunk_blocks(msg)
 
     # keep last block for ecbc
     last_block = m.pop()

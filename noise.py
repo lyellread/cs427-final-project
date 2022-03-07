@@ -4,7 +4,7 @@
 noise - Nice 'Ol Interactive Stream Encryption
 
 Usage:
-    noise keygen [-v] KEYFILE
+    noise keygen [-v] [KEYFILE]
     noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
     noise --test [-v]
@@ -47,15 +47,11 @@ if __name__ == "__main__":
         exit()
 
     # stdin/out specified?
-    if ARGS["INFILE"] == "-":
+    if ARGS["KEYFILE"] == "-" or ARGS["KEYFILE"] is None:
+        ARGS["KEYFILE"] = sys.stdout.fileno()
+    if ARGS["INFILE"] == "-" or ARGS["INFILE"] is None:
         ARGS["INFILE"] = sys.stdin.fileno()
-    if ARGS["OUTFILE"] == "-":
-        ARGS["OUTFILE"] = sys.stdout.fileno()
-
-    # no files given?
-    if ARGS["INFILE"] is None and ARGS["OUTFILE"] is None:
-        ARGS["INFILE"] = sys.stdin.fileno()
-    if ARGS["OUTFILE"] is None:
+    if ARGS["OUTFILE"] == "-" or ARGS["OUTFILE"] is None:
         ARGS["OUTFILE"] = sys.stdout.fileno()
 
     if ARGS["keygen"]:
