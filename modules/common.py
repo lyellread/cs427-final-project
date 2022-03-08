@@ -8,9 +8,9 @@ from math import ceil
 
 import pyaes
 
-# lambda aka block size
-LAMBDA_BITS = 128  # AES is defined in terms of bit length
-LAMBDA = LAMBDA_BITS // 8  # but bytestrings are in bytes
+# Define the block size
+LAMBDA_BITS = 128  # The AES implementation we are using is defined to be 128 bit
+LAMBDA = LAMBDA_BITS // 8  # Convert into bytes from bits to use with bytestrings
 
 
 def prp(key: bytes, msg: bytes) -> bytes:
@@ -51,9 +51,9 @@ def get_random_bytes(len: int) -> bytes:
     return os.urandom(len)
 
 
-def chunk_blocks(msg: bytes, size=LAMBDA) -> list[bytes]:
+def chunk_blocks(msg: bytes, size=LAMBDA) -> list:
     """
-    Split `msg` into size-length chunks (blocks).
+    Split msg into size-length chunks (blocks).
 
     This does *not* pad the last block.
     """
@@ -73,7 +73,7 @@ def chunk_blocks(msg: bytes, size=LAMBDA) -> list[bytes]:
     return m
 
 
-def pad(msg: list[bytes], length: int) -> list[bytes]:
+def pad(msg: list, length=LAMBDA) -> list:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
 
@@ -114,7 +114,7 @@ def pad(msg: list[bytes], length: int) -> list[bytes]:
     return msg
 
 
-def unpad(msg: list[bytes], length: int) -> list[bytes]:
+def unpad(msg: list, length=LAMBDA) -> list:
 
     # print(f"[Unpad] : Pre-unpadding msg: {msg}")
 
@@ -170,7 +170,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
 
         ci = xor(prp(key, r), m[i])
         c.append(ci)
-        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Recombine array into a string of bytes.
     return b"".join(c)
@@ -208,7 +208,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
         # )
         mi = xor(prp(key, r), c[i])
         m.append(mi)
-        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Remove padding from the array of blocks
     m = unpad(m, LAMBDA)
@@ -245,7 +245,7 @@ def hash(msg: bytes) -> bytes:
 
 def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     """
-    Return a LAMBDA-length MAC tag of input `msg`
+    Return a LAMBDA-length MAC tag of input msg
 
     This uses CBC-MAC with our AES-based hash and PRP to construct a MAC
     out of a PRF function:

@@ -42,8 +42,7 @@ if __name__ == "__main__":
     if ARGS["--test"]:
         from modules import test
 
-        test.test_encrypt()
-        test.test_hash()
+        test.test_all()
         exit()
 
     # stdin/out specified?
