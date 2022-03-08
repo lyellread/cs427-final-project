@@ -36,6 +36,7 @@ if __name__ == "__main__":
     else:
         level = logging.WARN
 
+    # Configure Logging
     logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
     logging.debug(f"User-supplied command line arguments: {ARGS}")
 
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         test.test_all()
         exit()
 
-    # stdin/out specified?
+    # Check whether STDIN or STDOUT are specified, set files appropriately
     if ARGS["KEYFILE"] == "-" or ARGS["KEYFILE"] is None:
         ARGS["KEYFILE"] = sys.stdout.fileno()
     if ARGS["INFILE"] == "-" or ARGS["INFILE"] is None:

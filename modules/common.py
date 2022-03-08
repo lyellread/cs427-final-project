@@ -74,6 +74,16 @@ def chunk_blocks(msg: bytes, size=LAMBDA) -> list:
 
 
 def pad(msg: list, length=LAMBDA) -> list:
+    """
+    Applies the appropriate padding to the blocks provided as a list of blocks.
+
+    This padding scheme consists of adding null bytes for all but the last byte of
+    padding, which is reserved for the total count of padding bytes (including itself)
+    which are added.
+
+    In the case where all blocks are LAMBDA-sized, a new block is added which consists
+    of LAMBDA-1 null bytes followed by a byte containing the value LAMBDA.
+    """
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
 
@@ -115,6 +125,12 @@ def pad(msg: list, length=LAMBDA) -> list:
 
 
 def unpad(msg: list, length=LAMBDA) -> list:
+    """
+    This function performs the inverse of pad(). It takes an array of message
+    blocks and removes the padding from the last one by reading the last byte
+    of the last block and removing exactly that many bytes from the end of
+    the supplied message.
+    """
 
     # print(f"[Unpad] : Pre-unpadding msg: {msg}")
 
@@ -235,8 +251,10 @@ def hash(msg: bytes) -> bytes:
     # Pad the array of blocks to ensure all are LAMBDA-length
     m = pad(m, LAMBDA)
 
-    # perform davies-meyer: H_i = F(m_i, H_i-1) XOR H_i-1
-    h = b"\0" * LAMBDA  # initial hash value is 0
+    # Set the IV to all zero bytes.
+    h = b"\x00" * LAMBDA
+
+    # Perform Davies-Meyer compression
     for m_i in m:
         h = xor(prp(m_i, h), h)
 
@@ -245,7 +263,7 @@ def hash(msg: bytes) -> bytes:
 
 def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     """
-    Return a LAMBDA-length MAC tag of input msg
+    Return a LAMBDA-length MAC tag of msg
 
     This uses CBC-MAC with our AES-based hash and PRP to construct a MAC
     out of a PRF function:
@@ -265,11 +283,13 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     # Parse msg into blocks.
     m = chunk_blocks(msg)
 
-    # keep last block for ecbc
+    # Keep last block for ecbc
     last_block = m.pop()
 
-    # perform cbc: H_i = F(m_i, H_i-1) XOR H_i-1
-    t = b"\0" * LAMBDA  # initial iv value is 0
+    # Set IV to all zero bytes
+    t = b"\0" * LAMBDA
+
+    # Perform CBC-Mode Encryption
     for m_i in m:
         t = prp(key1, xor(t, m_i))
 

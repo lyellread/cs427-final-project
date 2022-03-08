@@ -17,7 +17,7 @@ def enc(keyfile, infile, outfile):
         # Encrypt using the decrypted key
         ctx = common.encrypt(k_enc, msg)
 
-        # append MAC tag
+        # Append MAC tag
         ctx += common.mac(k_mac1, k_mac2, ctx)
 
         # Write ciphertext to output file
