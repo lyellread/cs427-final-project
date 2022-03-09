@@ -265,12 +265,13 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     """
     Return a LAMBDA-length MAC tag of msg
 
-    This uses CBC-MAC with our AES-based hash and PRP to construct a MAC
-    out of a PRF function:
+    This uses ECBC-MAC with our AES-based hash and PRP to construct a MAC
+    out of a PRF function. In order to ensure security across all sizes of
+    inputs, a second key is used for the last block (ECBC-MAC):
 
     for i = 0 to l - 1:
-        H_i = F(k, m_i XOR H_i-1)
-    return F(k_2, m_l XOR H_l-1
+        t_i = F(k, m_i XOR t_i-1)
+    return F(k_2, m_l XOR t_l-1
     """
 
     # logging.debug(f"[MAC] : msg:{msg.hex()}, key:{key1.hex()},{key2.hex()}")
