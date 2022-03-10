@@ -390,11 +390,10 @@ A few parameters are seen below. $s$ is a salt that can be an arbitrary length (
 \begin{center}
   \fcodebox{
     \codebox{
-      \> $s \gets {0, 1}^{128}$ \\
       \> klen := 128 \\
       \> hlen := 128 \\
       \> c := \\
-      \underline{PBKDF2(p):} \\
+      \underline{PBKDF2(p, s):} \\
       \> for i = 1 to (klen/hlen): \\
       \> \> $U_1$ := HMAC(p, s || i) \\
       \> \> $T_i$ := $U_1$ \\
@@ -424,22 +423,26 @@ The encrypted key and its hash will be kept in a file, and the decrypted key wil
     \codebox{
       \underline{KeyGen():} \\
       \> $p :=$ getpass() \\
-      \> $ph := \subname{Hash}_{D-M}(p)$ \\
-      \> $k \gets \{0, 1\}^{\lambda}$ \\
-      \> $k += \subname{Hash}_{D-M}(k)$ \\
-      \> $E := \subname{Enc}_{CTR}(ph, k)$ \\
-      \> return $E$
+      \> $s \gets \{0, 1\}^{\lambda}$ \\
+      \> $K := \subname{PBKDF2}(p, s)$ \\
+      \> $key \gets \{0, 1\}^{\lambda}$ \\
+      \> $mac1 \gets \{0, 1\}^{\lambda}$ \\
+      \> $mac2 \gets \{0, 1\}^{\lambda}$ \\
+      \> $kh = \subname{Hash}_{DM}(k||mac||mac2)$ \\
+      \> $E := \subname{Enc}_{CTR}(K, key||mac1||mac2||kh)$ \\
+      \> return $E||salt$
     }
     \qquad
     \codebox{
       \underline{DecryptKey():} \\
       \> $p :=$ getpass() \\
-      \> $ph := \subname{Hash}_{D-M}(p)$ \\
-      \> $k, kh := \subname{Dec}_{CTR}(h, KeyFile)$ \\
-      \> $keyH := \subname{Hash}_{D-M}(k)$ \\
-      \> if $kh \neq keyH$: \\
+      \> $s := Keyfile[-\lambda :]$ \\
+      \> $K := \subname{PBKDF2}(p, s)$ \\
+      \> $k, mac1, mac2, H := \subname{Dec}_{CTR}(K, KeyFile[: -\lambda])$ \\
+      \> $keyH := \subname{Hash}_{DM}(k||mac1||mac2)$ \\
+      \> if $H \neq keyH$: \\
       \> \> return $\err$ \\
-      \> return $k$
+      \> return $k, mac1, mac2$
     }
   }
 \end{center}
