@@ -410,7 +410,9 @@ A few parameters are seen below. $s$ is a salt that can be an arbitrary length (
 
 ## Formal Scheme Definition
 
-The encrypted key and its hash will be kept in a file, and the decrypted key will be extracted and used internally within the program only. This is reflected below:
+Our program relies on three secret keys: a key for encryption and decryption of a file, and two keys to generate a MAC for the encrypted file's contents.
+
+The encrypted keys and their hash will be kept in a file, and the decrypted keys will be extracted and used internally within the program only. This is reflected below:
 
 \
 
@@ -449,13 +451,17 @@ The encrypted key and its hash will be kept in a file, and the decrypted key wil
 
 ## Security Proof and Reasoning
 
-There are a number of components to these functions. 
+There are a number of components to these functions. We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses an HMAC as its PRF calls. This HMAC uses a Davies-Meyer function as its internal hash component. These layers of security depend on the layer below it.
 
-To transform the password into a key to use for encryption, we compute the Davies-Meyer hash of the password into 128-bit output. This we use as the key to encrypt our Master Key. 
+We start with the Davies-Meyer hash. We are interested in the collision-resistance of the hash function. We know that F is a secure block cipher. 
 
-This key is not stored anywhere, and so is not vulnerable to pass-the-hash attack. Instead to check that the password is correct, the Master Key has a hash created of itself, and then appended to itself. The Master Key and its hash are encrypted together, so that when the password-hash is used as a key to decrypt the KeyFile, we know the password was correct because the resultant hash matches the key preceding it. In this way, the hash-then-encrypt method functions like an HMAC, ensuring both that the password is correct and that the KeyFile has not been tampered with.
+F takes as its key the blocks of message m. 
 
-Additionally, we have already proved that our modified $\subname{ENC}_{CTR}$ has CCA security. If the password is ever changed on the Key Manager, this would mean that the "plaintext message" changes, and we are guaranteed that an attacker with access to the encrypted KeyFile couldn't obtain partial information about the Master Key.
+There are two possibilities here: either each block of m is distinct, in which case there are as many F(*)s as there are blocks; or some of the blocks are the same. This second possibility would be more interesting to an attacker. If they passed in several message blocks of all zeros (for instance), would they be able to reverse-engineer the hash in order to reveal the original message of a different hash:
+
+The actual keyfile itself contains three keys, as described above. These three keys are concatenated together and then hashed through our Davies-Meyer function. This hash is used as a verification that a) the password is correct, and b) the keyfile is not corrupted. If either of these conditions does not hold, then the program will return an error instead of the correctly-decrypted keys. While a MAC would be ideal here, a MAC requires the use of an additional key. We are unable to do that while continuing use a password to encrypt the keyfile.
+
+The usage (or not) of a MAC for the key storage functions is not important. It is important for the encryption and decryption of files, as those are intended to leave the computer, where eavesdroppers could corrupt and edit the files before they get to their destination. However, for the storage of keyfiles on a single computer, the risk for corruption is a lot lower, and it's not imperative that the keyfiles have MACs computed for them.
 
 # Conclusion and Discussion
 
