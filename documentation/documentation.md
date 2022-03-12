@@ -408,7 +408,7 @@ The encrypted keys and their hash will be kept in a file, and the decrypted keys
       \> $mac2 \gets \{0, 1\}^{\lambda}$ \\
       \> $kh = \subname{Hash}_{DM}(k||mac||mac2)$ \\
       \> $E := \subname{Enc}_{CTR}(K, key||mac1||mac2||kh)$ \\
-      \> return $E||salt$
+      \> return $E||s$
     }
     \qquad
     \codebox{
@@ -427,13 +427,18 @@ The encrypted keys and their hash will be kept in a file, and the decrypted keys
 
 ## Security Proof and Reasoning
 
-There are a number of components to these functions. We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses an HMAC as its PRF calls. This HMAC uses a Davies-Meyer function as its internal hash component. These layers of security depend on the layer below it.
+### Deriving keys from passwords
 
-We start with the Davies-Meyer hash. We are interested in the collision-resistance of the hash function. We know that F is a secure block cipher. 
+We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. We know that $\subname{F}{AES}$ is a secure PRP, and so, a secure PRF as well. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements:
 
-F takes as its key the blocks of message m. 
+1. the inputs and outputs are distinct
+2. the function is invertible
 
-There are two possibilities here: either each block of m is distinct, in which case there are as many F(*)s as there are blocks; or some of the blocks are the same. This second possibility would be more interesting to an attacker. If they passed in several message blocks of all zeros (for instance), would they be able to reverse-engineer the hash in order to reveal the original message of a different hash:
+Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build our PBKDF2.
+
+TODO: rest of PBKDF2 defense
+
+### Use of keyfile hashes
 
 The actual keyfile itself contains three keys, as described above. These three keys are concatenated together and then hashed through our Davies-Meyer function. This hash is used as a verification that a) the password is correct, and b) the keyfile is not corrupted. If either of these conditions does not hold, then the program will return an error instead of the correctly-decrypted keys. While a MAC would be ideal here, a MAC requires the use of an additional key. We are unable to do that while continuing use a password to encrypt the keyfile.
 
