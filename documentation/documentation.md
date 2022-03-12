@@ -50,9 +50,9 @@ Throughout NOISE, several primitives are used. These primitives are defined belo
       \> \comment{\# AES-128 Decryption} \\
       \> return $m \in \M$\\
       \\
-      \underline{$\subname{Enc_{CTR}}(m \in \M):$} \\
+      \underline{$\subname{Enc}_{\text{CTR}}(m \in \M):$} \\
       \\
-      \underline{$\subname{Dec_{CTR}}(m \in \M):$} \\
+      \underline{$\subname{Dec}_{\text{CTR}}(m \in \M):$} \\
       \\
     }
     \qquad
