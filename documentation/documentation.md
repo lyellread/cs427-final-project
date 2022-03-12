@@ -327,32 +327,6 @@ The two biggest primitives we will define here is a hash function and PBKDF2.
 
 We will also use the $F_{AES}$ block cipher that we defined earlier. When we use $F_{AES}$ in the `Stream Encryption and Decryption` section, the key it takes is the "master key" that is outputted from this section. When we use $F_{AES}$ in here, it will not be used in the same way.
 
-### Davies-Meyer compression function
-
-The hash function we will be using is a Davies-Meyer compression function with our same block cipher, $F_{AES}$. The reason we are using the Davies-Meyer compression function is because we want to implement as much from the ground-up as we can, and this is a very straight-forward function.
-
-A Davies-Meyer function uses a block cipher to produce a hash. The "keys" that are passed into the block cipher are the blocks of the message itself. This is going to be used as an intermediate function to produce an HMAC. The Davies-Meyer algorithm is defined below:
-
-\
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> blen = 128 \\
-      \> \\
-      \underline{$\subname{Hash}_{DM}(m_1||...||m_l$):} \\
-      \> $h := \{0\}^{blen}$ \\
-      \> for $i = 1$ to $l$: \\
-      \> \> $h := F(m_i, h) \oplus h$ \\
-      \> return $h$
-    }
-  }
-\end{center}
-
-\
-
-A block cipher is not itself a hash function but it can be used as a building block to one. The hashes produced by the Davies-Meyer function are effective, collision-resistant hashes.
-
 ### Password-Based Key Derivation Function 2 (PBKDF2)
 
 PBKDF2 is an established Key Derivation Function that will be doing the heavy lifting in turning a keyfile's password into a usable "master key" to decrypt it. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
@@ -437,6 +411,8 @@ We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key
 Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build our PBKDF2.
 
 TODO: rest of PBKDF2 defense
+https://www.tarsnap.com/scrypt.html
+https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf 
 
 ### Use of keyfile hashes
 
@@ -447,3 +423,11 @@ The usage (or not) of a MAC for the key storage functions is not important. It i
 # Conclusion and Discussion
 
 In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be NOISE. 
+
+# Appendix A: Changelog
+
+Our draft was like this, we changed it to like this after recieving feedback.
+
+# Appendix B: Feedback
+
+> "Good progress so far. I think it would be helpful to be clearer about what specific problem you're trying to solve. It might help to differentiate your approach from other similar ones, and share design rationale. I admire your efforts to do a security proof but I see some bugs: 1. if "r" is blen bits long then there is no space left for m 2. decryption doesn't check r, nor does it separate m||r 3. This cannot be CCA secure --> I can drop the last ciphertext block and the result is still a valid encryption 4. It is a little bit more involved than you claim to derive the probability of collisions in r (since you care about collisions in r, r+1, .. r+L). If you are really using passwords rather than true encryption keys, then you should give more details about how the password is converted to a key. Just saying Davies-Meyer doesn't give me enough information (that's like saying "I use CTR mode" without saying what the block cipher is), and it is probably not the ideal way to derive a key from a password anyway." 
