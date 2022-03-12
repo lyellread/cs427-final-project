@@ -37,11 +37,11 @@ As mentioned, `NOISE` consists of two major parts: `Stream Encryption` and `Key 
 
 # Notations and Terminology
 
-Through this report, the standard notations from CS 427: Cryptography will be used. This includes symbols such as "$\gets$" ("samples uniformly from") and the hybrid proof format. In addition, the scheme $\Sigma$ will be used throughout to encapsulate several primitives that are referenced by `NOISE` constructions, accessing these subroutines will take the form $\Sigma.\subname{SubroutineName}()$. 
+Through this report, the standard notations from CS 427: Cryptography will be used. This includes symbols such as "$\gets$" ("samples uniformly from") and the hybrid proof format. In addition, the scheme $\Sigma$ will be used throughout to encapsulate several primitives that are referenced by `NOISE` constructions, accessing these subroutines will take the form $\sig{SubroutineName}$. 
 
-As a point of clarification, there are multiple subroutines with names that hint at Key Generation. Specifically, at first glance, the construction in [Key Generation and Storage] might be confused with $\Sigma.\subname{KeyGen}()$, however this abstraction of $\Sigma.\subname{KeyGen}()$ into the set of primitives in [Primitives] represents an attempt at mirroring the way that `NOISE` is programmed.
+As a point of clarification, there are multiple subroutines with names that hint at Key Generation. Specifically, at first glance, the construction in [Key Generation and Storage] might be confused with $\sig{KeyGen}$, however this abstraction of $\sig{KeyGen}()$ into the set of primitives in [Primitives] represents an attempt at mirroring the way that `NOISE` is programmed.
 
-TODO: () on function calls or not in text??
+TODO: no () on function calls
 
 \pagebreak
 
@@ -68,40 +68,40 @@ TODO: Add Pad() and UnPad() here
       \> return $k \in \K$ \\
       \\
       \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
-      \> $r \gets \bits^{blen}$ \\
+      \> $r \gets \bits^{\text{blen}}$ \\
       \> $c_0 := r$ \\
       \> for $i = 1$ to $l$: \\
-      \> \> $c_i := \Sigma.F(k, r) \oplus m_i$ \\
-      \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
+      \> \> $c_i := \sig{F}(k, r) \oplus m_i$ \\
+      \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
       \> return $c_0 || \cdots || c_l \in \C$\\
       \\
       \underline{$\subname{Dec}_{\text{CTR}}(k \in \K, c_0 || \cdots || c_l \in \C)$:} \\
       \> $r := c_0$ \\
       \> for $i = 1$ to $l$: \\
-      \> \> $m_i := \Sigma.F(k, r) \oplus c_i$\\
-      \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
+      \> \> $m_i := \sig{F}(k, r) \oplus c_i$\\
+      \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
       \> return $m_1 || \cdots || m_l \in \M$
     }
     \qquad
     \codebox{
-      \underline{$F_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
+      \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
       \> \comment{\# AES-128 Encryption} \\
       \> return $c \in \C$\\
       \\
-      \underline{$F_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
+      \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
       \> \comment{\# AES-128 Decryption} \\
       \> return $m \in \M$\\
       \\
       \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M)$:} \\
       \> $x := m_l$ \\
-      \> $t := \bit{0}^{blen}$ \\
+      \> $t := \bit{0}^{\text{blen}}$ \\
       \> for $i=0$ to $i = l-1$: \\
       \> \> $t := F(k_1, t \oplus m_i)$ \\
       \> $t := F(k_2, t \oplus x)$ \\
       \> return $t \in \T$ \\
       \\
       \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
-      \> return $t \qequiv \Sigma.\subname{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
+      \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
       \\
     }
   }
@@ -113,15 +113,13 @@ TODO: Add Pad() and UnPad() here
 
 ### Block Cipher
 
-Our design utilizes a Block Cipher, $F$. $F$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
+Our design utilizes a Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
 
 ### Block Cipher Mode
 
-`NOISE` makes use of $\subname{Enc}_{\text{CTR}}$ and $\subname{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
+`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
 
 ### GetTag and CheckTag
-
-
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
@@ -136,40 +134,39 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 ## Formal Scheme Definition
 
 TODO: add desc
-TODO: add scheme library with keys sampled from random & uses Sigma
 TODO: Fix all references to reference Sigma, like \\K 
 
 
 \begin{center}
   \codebox{
     \titlecodebox{$\texttt{\upshape NOISE}$}{
-      define $k_\text{stream}, k_\text{m1}, k_\text{m2} \in \K$ \\
+      define $k_\text{stream}, k_\text{mac1}, k_\text{mac2} \in \Sigma.\K$ \\
       \\
       \comment{\# Keys are read from file} \\
-      $k_\text{stream}, k_\text{m1}, k_\text{m2} := \texttt{\upshape NOISE}.\subname{ReadKeys}$ \\
+      $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{ReadKeys}$ \\
       \\
       \comment{\# Get message from user} \\
       define $m \in \bits^*$ \\
       \\
       \comment{\# Encrypt message} \\
-      $c := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, m)$: \\
+      $c := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m)$: \\
       \\
       \comment{\# Decrypt ciphertext} \\
-      $m_1 := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, c)$: \\
+      $m_1 := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c)$: \\
       \\
       assert $m = m_1$
     }
     $\link$
     \titlecodebox{\lib{Stream}}{
       \codebox{
-        \underline{$\subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, m \in \bits^*)$:} \\
+        \underline{$\subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m \in \bits^*)$:} \\
         \> $m := \sig{Pad}(m)$ \\
         \> $c := \sig{Enc}_\text{CTR}(k_\text{stream}, m)$ \\
-        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{m1}, k_\text{m2}, c)$ \\
+        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1}, k_\text{mac2}, c)$ \\
         \> return $c || t$\\
         \\
-        \underline{$\subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, c \in \bits^{n \cdot \lambda} || t \in \T)$:} \\
-        \> if $\sig{CheckTag}_{\text{ECBC}}(k_\text{m1}, k_\text{m2}, c, t) = \bit{false}$: \\
+        \underline{$\subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c || t \in \Sigma.\T)$:} \\
+        \> if $\sig{CheckTag}_{\text{ECBC}}(k_\text{mac1}, k_\text{mac2}, c, t) = \bit{false}$: \\
         \> \> return $\bit{err}$ \\
         \> $m := \sig{Dec}_\text{CTR}(k_\text{stream}, c)$ \\
         \> $m := \sig{UnPad}(m)$ \\
@@ -180,6 +177,8 @@ TODO: Fix all references to reference Sigma, like \\K
 \end{center}
 
 ## Security Proof and Reasoning
+
+TODO: Rewrite proof completely
 
 We will prove that the encryption scheme of our key manager, a modified CTR mode, has security against chosen ciphertext attacks. We assume that F is a secure PRP.
 
@@ -251,11 +250,11 @@ From here, we will walk through the proof for the left library.
   $\link$
   \fcodebox{
     \underline{$\subname{Enc}_{CTR}(k, m_{1L}||...||m_{lL}):$} \\
-    \> $r \gets \bits^{blen}$ \\
+    \> $r \gets \bits^{\text{blen}}$ \\
     \> $c_0 := r$ \\
     \> for $i = 1$ to $l$: \\
     \> \> $c_i := F(k, m_{iL}||r)$ \\
-    \> \> $r := r + 1 \% 2^{blen}$ \\
+    \> \> $r := r + 1 \% 2^{\text{blen}}$ \\
     \> return $c_0 || ... || c_l$
   }
   $\indist$
@@ -268,9 +267,9 @@ From here, we will walk through the proof for the left library.
 
 \
 
-Next, we can turn our attention to the linked encryption scheme. Here we see that for each block, we calculate $F(k, m_i||r)$ for the corresponding ciphertext block. $r$ is sampled randomly, so the chance of collision is $\frac{1}{2^{blen}}$. However, we are doing counter mode, so $r$ for each subsequent block in the message is deterministic, for $l$ blocks in the message. Still, the rate of collision comes to $\frac{l}{2^{blen}}$. The $l$ increases much slower than the $2^{blen}$, which means the rate of collisions is still negligible.
+Next, we can turn our attention to the linked encryption scheme. Here we see that for each block, we calculate $F(k, m_i||r)$ for the corresponding ciphertext block. $r$ is sampled randomly, so the chance of collision is $\frac{1}{2^{\text{blen}}}$. However, we are doing counter mode, so $r$ for each subsequent block in the message is deterministic, for $l$ blocks in the message. Still, the rate of collision comes to $\frac{l}{2^{\text{blen}}}$. The $l$ increases much slower than the $2^{\text{blen}}$, which means the rate of collisions is still negligible.
 
-Because $r$ is sampled randomly and has a neglible rate of collisions, $m_i||r$ also has a collision rate of $\frac{l}{2^{blen}}$ even when the same $m_i$ is inputted. It does not matter what $m_i$ is when we concatenate it with $r$ and put it through the PRP $F$. To illustrate this, we can apply the following transformation:
+Because $r$ is sampled randomly and has a neglible rate of collisions, $m_i||r$ also has a collision rate of $\frac{l}{2^{\text{blen}}}$ even when the same $m_i$ is inputted. It does not matter what $m_i$ is when we concatenate it with $r$ and put it through the PRP $F$. To illustrate this, we can apply the following transformation:
 
 \
 
@@ -296,11 +295,11 @@ Because $r$ is sampled randomly and has a neglible rate of collisions, $m_i||r$ 
   $\link$
   \fcodebox{
     \underline{$\subname{Enc}_{CTR}(k, m_{1L}||...||m_{lL}):$} \\
-    \> $\mathhighlight{x} \gets \bits^{blen}$ \\
+    \> $\mathhighlight{x} \gets \bits^{\text{blen}}$ \\
     \> $c_0 := r$ \\
     \> for $i = 1$ to $l$: \\
     \> \> $c_i := F(k, \mathhighlight{x})$ \\
-    \> \> $r := r + 1 \% 2^{blen}$ \\
+    \> \> $r := r + 1 \% 2^{\text{blen}}$ \\
     \> return $c_0 || ... || c_l$
   }
   $\indist$
@@ -339,11 +338,11 @@ Now, $m_{1L}||...||m_{lL}$ is not being used by the $Enc_{CTR}$ function; we can
   $\link$
   \fcodebox{
     \underline{$\subname{Enc}_{CTR}(k, \mathhighlight{m_{1R}||...||m_{lR}}):$} \\
-    \> $x \gets \bits^{blen}$ \\
+    \> $x \gets \bits^{\text{blen}}$ \\
     \> $c_0 := r$ \\
     \> for $i = 1$ to $l$: \\
     \> \> $c_i := F(k, x)$ \\
-    \> \> $r := r + 1 \% 2^{blen}$ \\
+    \> \> $r := r + 1 \% 2^{\text{blen}}$ \\
     \> return $c_0 || ... || c_l$
   }
   $\indist$
@@ -416,7 +415,7 @@ PBKDF2 is an established Key Derivation Function that will be doing the heavy li
 
 PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Isntead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A PRP is a suitable PRF (more discussion later), so it is the function we are choosing for PBKDF2
 
-A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $blen$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
 
 Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
 
