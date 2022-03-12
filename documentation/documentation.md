@@ -337,28 +337,24 @@ These define the functions that handle generation and storage of keyfiles used b
 
 These keyfiles are stored encrypted with a password that varies per keyfile. This "password encryption" is implemented by way of Password-Based Key Derivation Function 2 (PBKDF2). This will be expanded upon in the Primitives section.
 
-The keyfiles are encrypted without a MAC as a MAC requires additional secret keys. Our goal is to encrypt with only one password-derived key, so encrypting and MAC'ing is not feasible. To compensate somewhat, a hash is appended to the keyfile before the whole keyfile is encrypted. More discussion on the security properties of this are discussed later.
+The keyfiles are also encrypted with a MAC on them. This verifies that if the keyfile was maliciously modified, that this would be detected and you would be unable to use it. Using it would cause errors to the proper encryption and decryption. Of course, using a MAC requires additional keys, and we're only using one password. This is handled by having PBKDF2 ouput a much longer key. This can then be subdivided into several keys. More on the security properties of this are discussed later.
 
-## Primitives
-
-The two biggest primitives we will define here is a hash function and PBKDF2.
-
-We will also use the $F_{AES}$ block cipher that we defined earlier. When we use $F_{AES}$ in the `Stream Encryption and Decryption` section, the key it takes is the "master key" that is outputted from this section. When we use $F_{AES}$ in here, it will not be used in the same way.
-
-### Password-Based Key Derivation Function 2 (PBKDF2)
+## Password-Based Key Derivation Function 2 (PBKDF2)
 
 PBKDF2 is an established Key Derivation Function that will be doing the heavy lifting in turning a keyfile's password into a usable "master key" to decrypt it. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
 
-PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Isntead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A PRP is simply a PRF with additional requirements. Because of this, it's still a PRF, so we shall be using it for our PBKDF2.
+PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Isntead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A PRP is a suitable PRF (more discussion later), so it is the function we are choosing for PBKDF2
 
-A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $klen$ is the desired length of the key. We can change this, however we are constricted to the key-lengths that our encryption algorithm can take, which is 128. $blen$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $blen$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+
+Lastly, $klen$ is the desired length of the key. While we are constricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
 
 \
 
 \begin{center}
   \fcodebox{
     \codebox{
-      \> klen := 128 \\
+      \> klen := 384 \\
       \> blen := 128 \\
       \> c := \\
       \underline{PBKDF2(p, s):} \\
@@ -380,7 +376,7 @@ A few parameters are seen below. $s$ is a salt that can be an arbitrary length (
 
 Our program relies on three secret keys: a key for encryption and decryption of a file, and two keys to generate a MAC for the encrypted file's contents.
 
-The encrypted keys and their hash will be kept in a file, and the decrypted keys will be extracted and used internally within the program only. This is reflected below:
+The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys will be extracted and used internally within the program only. This is reflected below:
 
 \
 
