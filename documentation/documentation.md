@@ -431,9 +431,15 @@ The usage (or not) of a MAC for the key storage functions is not important. It i
 
 In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be NOISE. 
 
+\newpage
+
 # Appendix A: Changelog
 
-Our draft was like this, we changed it to like this after recieving feedback.
+We submitted an initial draft for feedback. Our original design was a modified CTR mode for encryption, and our method for generating a key out of a password was with a simple hash function. We recieved feedback on both parts of this (see Appendix B). In short, our CTR mode was still not CCA-secure, and our password-to-key generation was not an optimal method of doing so. 
+
+To combat these issues, we made a variety of changes. Firstly, we returned to normal CTR mode, and included a MAC, turning into an "Enc-then-MAC" scheme. The MAC we chose for this purpose was an ECBC-MAC. Next, we did further research in how password-generated keys are implemented in the industry. We chose to implement one of these methods, PBKDF2. This is a much more real and  sophisticated way of generating password-derived keys.
+
+One thing that we got right in the initial design was quickly identifying AES as the block cipher / PRP we would use. This allowed us to easily reuse it in our ECBC-MAC and as a PRF in our implementation of PBKDF2.
 
 # Appendix B: Feedback
 
