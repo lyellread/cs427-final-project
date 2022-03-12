@@ -25,15 +25,29 @@ header-includes:
 
 # Abstract
 
-To demonstrate proficient Cryptographic knowledge gained from this course, our group designed a NOISE: Nice Ol' Interactive Stream Encryption. This is basically a key manager with built in encryption/decryption of messages with the keys within the manager. This project demonstrated: knowledge of the different definitions of security for different components (encryption schemes, pseudorandom permutations, and compression functions), ability to research further on what was taught in class (to find a suitable PRP, which ended up being AES), ability to write proofs for our cryptographic scheme, and ability to implement in code and test our cryptographic scheme. We wrote this program in Python and utilized a number of different libraries: PyAES, getpass, and docopt.
+TODO: Standardize keyfile / key file
 
-**NOTE:** Our Python scripts have a few small bugs that we were unable to iron out prior to submission, and will be broken if you try to run them. Please feel free to read through the code however! We started implementing our modified CTR but ran into complications. We have decided to use regular non-CCA secure CTR and add a MAC to ensure CCA security, but this has not been implemented yet.
+As the final assessment for CS 427: Cryptography, we developed and proved the security of a program named `NOISE` (`N`ice `O`l' `I`nteractive `S`tream `E`ncryption). `NOISE` is made up of two tools which are accessible using the command line: a [Key Generation and Storage] module, and tools to perform [Stream Encryption and Decryption]. The former can generate random keys, encrypt these for storage in a key file using a user-supplied password, and retrieve keys from key files. The encryption and decryption functions are able to accept file inputs or read from and to `stdin` and `stdout` depending on the usage. 
+
+This project is a culmination of the concepts presented throughout CS 427, notably including security standards and definitions, evaluations of cryptographic protocol weaknesses, understanding cryptographic threat models, and general ability to use and prove the security of systems built out of cryptographic building blocks.
+
+<!-- # Architecture
+
+As mentioned, `NOISE` consists of two major parts: `Stream Encryption` and `Key Generation`. Each of these parts makes use of several primitives defined in [Primitives] in order to function. These two functions rely on each other, as `Stream Encryption` requires that the `Key Generation` module decrypt and extract the relevant keys from the keyfile, while `Key Generation` makes use of `Stream Encryption`'s encryption function to secure keyfiles. Each of these parts of the program are described in their respective sections: `Stream Encryption` is defined in [Stream Encryption and Decryption] and `Key Generation` is defined in [Key Generation and Storage]. -->
+
+# Notations and Terminology
+
+Through this report, the standard notations from CS 427: Cryptography will be used. This includes symbols such as "$\gets$" ("samples uniformly from") and the hybrid proof format. In addition, the scheme $\Sigma$ will be used throughout to encapsulate several primitives that are referenced by `NOISE` constructions, accessing these subroutines will take the form $\Sigma.\subname{SubroutineName}()$. 
+
+As a point of clarification, there are multiple subroutines with names that hint at Key Generation. Specifically, at first glance, the construction in [Key Generation and Storage] might be confused with $\Sigma.\subname{KeyGen}()$, however this abstraction of $\Sigma.\subname{KeyGen}()$ into the set of primitives in [Primitives] represents an attempt at mirroring the way that `NOISE` is programmed.
+
+TODO: () on function calls or not in text??
 
 \pagebreak
 
 # Primitives
 
-Throughout NOISE, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
+Throughout `NOISE`, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
 TODO: Fix F name throughout and subname is always used
 TODO: Check schemes for accuracy
@@ -47,6 +61,10 @@ TODO: Check schemes for accuracy
       $\T = \bits^{128}$ \\
       \\
       $\text{blen} := 128$ \comment{\#bits} \\
+      \\
+      \underline{$\subname{KeyGen}()$:}\\
+      \> $k \gets \K$ \\
+      \> return $k$ \\
       \\
       \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
       \> $r \gets \bits^{blen}$ \\
@@ -65,15 +83,15 @@ TODO: Check schemes for accuracy
     }
     \qquad
     \codebox{
-      \underline{$F_{\subname{AES-128}}(k \in \K, m \in \M):$} \\
+      \underline{$F_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
       \> \comment{\# AES-128 Encryption} \\
       \> return $c \in \C$\\
       \\
-      \underline{$F_{\subname{AES-128}}^{-1}(k \in \K, c \in \C):$} \\
+      \underline{$F_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
       \> \comment{\# AES-128 Decryption} \\
       \> return $m \in \M$\\
       \\
-      \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M):$} \\
+      \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M)$:} \\
       \> $x := m_l$ \\
       \> $t := \bit{0}^{blen}$ \\
       \> for $i=0$ to $i = l-1$: \\
@@ -81,30 +99,36 @@ TODO: Check schemes for accuracy
       \> $t := F(k_2, t \oplus x)$ \\
       \> return $t$ \\
       \\
-      \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T):$} \\
+      \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
       \> return $t \qequiv \Sigma.\subname{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
       \\
     }
   }
 \end{center}
 
-## Block Cipher
+\pagebreak
 
-Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher) for the AES block cipher implementation. 
+## Explanation of Primitive Choices
 
-## Enc and Dec - CTR mode
+### Block Cipher
 
-Our Encryption and Decryption modes utilize the standard CTR mode. This provides CPA security. This is implemented in an "Enc-then-MAC" scheme, which then provides CCA security. This uilizes our AES block cipher.
+Our design utilizes a Block Cipher, $F$. $F$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
 
-## GetTag and CheckTag
+### Block Cipher Mode
+
+`NOISE` makes use of $\subname{Enc}_{\text{CTR}}$ and $\subname{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
+
+### GetTag and CheckTag
 
 TODO: lowkey feel like you should rename gettag to $\subname{MAC}_{ECBC}$ so its in the same style as our F and its clear what we've implemented there.
+
+TODO: Add description of rationale for choosing ECBC-MAC.
 
 These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
 
 \pagebreak
 
-# Stream Encryption and Decryption (`enc`, `dec`)
+# Stream Encryption and Decryption
 
 These define the Encryption and Decryption algorithms used by the program both to encrypt and decrypt the Master Key, and to encrypt and decrypt messages *with* the Master Key.
 
@@ -336,7 +360,7 @@ Here we can see in this function, the left and right libraries are indistinguish
 
 \pagebreak
 
-# Key Generation and Storage (`keygen`)
+# Key Generation and Storage
 
 These define the functions that handle generation and storage of keyfiles used by the program. These keyfiles are generated with the function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
@@ -438,7 +462,7 @@ The usage (or not) of a MAC for the key storage functions is not important. It i
 
 # Conclusion and Discussion
 
-In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be NOISE. 
+In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be `NOISE`. 
 
 \newpage
 
