@@ -51,6 +51,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
 
 TODO: Fix F name throughout and subname is always used
 TODO: Check schemes for accuracy
+TODO: Add Pad() and UnPad() here
 
 \begin{center}
   \titlecodebox{$\Sigma$}{
@@ -64,7 +65,7 @@ TODO: Check schemes for accuracy
       \\
       \underline{$\subname{KeyGen}()$:}\\
       \> $k \gets \K$ \\
-      \> return $k$ \\
+      \> return $k \in \K$ \\
       \\
       \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
       \> $r \gets \bits^{blen}$ \\
@@ -72,14 +73,14 @@ TODO: Check schemes for accuracy
       \> for $i = 1$ to $l$: \\
       \> \> $c_i := \Sigma.F(k, r) \oplus m_i$ \\
       \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
-      \> return $c_0 || \cdots || c_l$\\
+      \> return $c_0 || \cdots || c_l \in \C$\\
       \\
       \underline{$\subname{Dec}_{\text{CTR}}(k \in \K, c_0 || \cdots || c_l \in \C)$:} \\
       \> $r := c_0$ \\
       \> for $i = 1$ to $l$: \\
       \> \> $m_i := \Sigma.F(k, r) \oplus c_i$\\
       \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
-      \> return $m_1 || \cdots || m_l$
+      \> return $m_1 || \cdots || m_l \in \M$
     }
     \qquad
     \codebox{
@@ -97,7 +98,7 @@ TODO: Check schemes for accuracy
       \> for $i=0$ to $i = l-1$: \\
       \> \> $t := F(k_1, t \oplus m_i)$ \\
       \> $t := F(k_2, t \oplus x)$ \\
-      \> return $t$ \\
+      \> return $t \in \T$ \\
       \\
       \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
       \> return $t \qequiv \Sigma.\subname{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
@@ -120,7 +121,7 @@ Our design utilizes a Block Cipher, $F$. $F$ is a [$\subname{AES-128}$ block cip
 
 ### GetTag and CheckTag
 
-TODO: lowkey feel like you should rename gettag to $\subname{MAC}_{ECBC}$ so its in the same style as our F and its clear what we've implemented there.
+
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
@@ -130,12 +131,53 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 
 # Stream Encryption and Decryption
 
-These define the Encryption and Decryption algorithms used by the program both to encrypt and decrypt the Master Key, and to encrypt and decrypt messages *with* the Master Key.
+`NOISE` features constructions to permit the user in encrypting and decrypting streams of data to and from files of their choice using a specified key. This scheme is described in this section.
 
 ## Formal Scheme Definition
 
 TODO: add desc
 TODO: add scheme library with keys sampled from random & uses Sigma
+TODO: Fix all references to reference Sigma, like \\K 
+
+
+\begin{center}
+  \codebox{
+    \titlecodebox{$\texttt{\upshape NOISE}$}{
+      define $k_\text{stream}, k_\text{m1}, k_\text{m2} \in \K$ \\
+      \\
+      \comment{\# Keys are read from file} \\
+      $k_\text{stream}, k_\text{m1}, k_\text{m2} := \texttt{\upshape NOISE}.\subname{ReadKeys}$ \\
+      \\
+      \comment{\# Get message from user} \\
+      define $m \in \bits^*$ \\
+      \\
+      \comment{\# Encrypt message} \\
+      $c := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, m)$: \\
+      \\
+      \comment{\# Decrypt ciphertext} \\
+      $m_1 := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, c)$: \\
+      \\
+      assert $m = m_1$
+    }
+    $\link$
+    \titlecodebox{\lib{Stream}}{
+      \codebox{
+        \underline{$\subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, m \in \bits^*)$:} \\
+        \> $m := \sig{Pad}(m)$ \\
+        \> $c := \sig{Enc}_\text{CTR}(k_\text{stream}, m)$ \\
+        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{m1}, k_\text{m2}, c)$ \\
+        \> return $c || t$\\
+        \\
+        \underline{$\subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{m1}}, k_{\text{m2}}, c \in \bits^{n \cdot \lambda} || t \in \T)$:} \\
+        \> if $\sig{CheckTag}_{\text{ECBC}}(k_\text{m1}, k_\text{m2}, c, t) = \bit{false}$: \\
+        \> \> return $\bit{err}$ \\
+        \> $m := \sig{Dec}_\text{CTR}(k_\text{stream}, c)$ \\
+        \> $m := \sig{UnPad}(m)$ \\
+        \> return $m$
+      }
+    }
+  }
+\end{center}
 
 ## Security Proof and Reasoning
 
