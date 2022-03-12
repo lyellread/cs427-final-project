@@ -35,13 +35,36 @@ To demonstrate proficient Cryptographic knowledge gained from this course, our g
 
 Throughout NOISE, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
+TODO: Fix F name throughout and subname is always used
+TODO: Check schemes for accuracy
+
 \begin{center}
   \titlecodebox{$\Sigma$}{
     \codebox{
       $\K = \bits^{128}$ \\
       $\M = \bits^{128}$ \\
       $\C = \bits^{128}$ \\
+      $\T = \bits^{128}$ \\
       \\
+      $\text{blen} := 128$ \comment{\#bits} \\
+      \\
+      \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
+      \> $r \gets \bits^{blen}$ \\
+      \> $c_0 := r$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $c_i := \Sigma.F(k, r) \oplus m_i$ \\
+      \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
+      \> return $c_0 || \cdots || c_l$\\
+      \\
+      \underline{$\subname{Dec}_{\text{CTR}}(k \in \K, c_0 || \cdots || c_l \in \C)$:} \\
+      \> $r := c_0$ \\
+      \> for $i = 1$ to $l$: \\
+      \> \> $m_i := \Sigma.F(k, r) \oplus c_i$\\
+      \> \> $r := r + 1 \text{ mod } 2^{blen}$ \\
+      \> return $m_1 || \cdots || m_l$
+    }
+    \qquad
+    \codebox{
       \underline{$F_{\subname{AES-128}}(k \in \K, m \in \M):$} \\
       \> \comment{\# AES-128 Encryption} \\
       \> return $c \in \C$\\
@@ -50,20 +73,27 @@ Throughout NOISE, several primitives are used. These primitives are defined belo
       \> \comment{\# AES-128 Decryption} \\
       \> return $m \in \M$\\
       \\
-      \underline{$\subname{Enc}_{\text{CTR}}(m \in \M):$} \\
+      \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M):$} \\
+      \> $x := m_l$ \\
+      \> $t := \bit{0}^{blen}$ \\
+      \> for $i=0$ to $i = l-1$: \\
+      \> \> $t := F(k_1, t \oplus m_i)$ \\
+      \> $t := F(k_2, t \oplus x)$ \\
+      \> return $t$ \\
       \\
-      \underline{$\subname{Dec}_{\text{CTR}}(m \in \M):$} \\
-      \\
-    }
-    \qquad
-    \codebox{
-      \underline{$\subname{GetTag}(m \in \M):$} \\
-      \\
-      \underline{$\subname{CheckTag}(m \in \M):$} \\
+      \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T):$} \\
+      \> return $t \qequiv \Sigma.\subname{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
       \\
     }
   }
 \end{center}
+
+## Explanation of Primitives
+
+### Block Cipher
+
+Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). 
+
 
 \pagebreak
 
@@ -71,42 +101,10 @@ Throughout NOISE, several primitives are used. These primitives are defined belo
 
 These define the Encryption and Decryption algorithms used by the program both to encrypt and decrypt the Master Key, and to encrypt and decrypt messages *with* the Master Key.
 
-## Primitives
-
-TODO move this
-
-Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). 
-
 ## Formal Scheme Definition
 
-Our symmetric encryption mode will be a modified CTR mode. For the Decryption algorithm, we don't really need to have $r$ or $c_0$ as it's simply concatenated with $m_i$ but we have kept it in the definition to better show how our modification resembles true CTR mode. Additionally, $r$ could be used to verify that the decryption was successful, as the resulting block would be $m_i||r$.
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> blen = 128
-    }
-    \qquad
-    \codebox{
-      \underline{$\subname{Enc}_{CTR}(k, m_1||...||m_l)$:} \\
-      \> $r \gets \bits^{blen}$ \\
-      \> $c_0 := r$ \\
-      \> for $i = 1$ to $l$: \\
-      \> \> $c_i := F(k, m_i||r)$ \\
-      \> \> $r := r + 1 \% 2^{blen}$ \\
-      \> return $c_0 || ... || c_l$
-    }
-    \qquad
-    \codebox{
-      \underline{$\subname{Dec}_{CTR}(k, c_0||...||c_l)$:} \\
-      \> $r := c_0$ \\
-      \> for $i = 1$ to $l$: \\
-      \> \> $m_i := F^{-1}(k, c_i)$ [blen:] \\
-      \> \> $r := r + 1 \% 2^{blen}$ \\
-      \> return $m_1||...||m_l$
-    }
-  }
-\end{center}
+TODO: add desc
+TODO: add scheme library with keys sampled from random & uses Sigma
 
 ## Security Proof and Reasoning
 
