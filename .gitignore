@@ -1,6 +1,7 @@
+# LaTeX with Pandoc ignores
 latex.out
 texout
-*.pdf
+**/*.pdf
 
 # encrypted files
 key
