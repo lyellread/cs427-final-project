@@ -31,7 +31,39 @@ To demonstrate proficient Cryptographic knowledge gained from this course, our g
 
 \pagebreak
 
-# Definitions
+# Primitives
+
+Throughout NOISE, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
+
+\begin{center}
+  \titlecodebox{$\Sigma$}{
+    \codebox{
+      $\K = \bits^{128}$ \\
+      $\M = \bits^{128}$ \\
+      $\C = \bits^{128}$ \\
+      \\
+      \underline{$F_{\subname{AES-128}}(k \in \K, m \in \M):$} \\
+      \> \comment{\# AES-128 Encryption} \\
+      \> return $c \in \C$\\
+      \\
+      \underline{$F_{\subname{AES-128}}^{-1}(k \in \K, c \in \C):$} \\
+      \> \comment{\# AES-128 Decryption} \\
+      \> return $m \in \M$\\
+      \\
+      \underline{$\subname{Enc_{CTR}}(m \in \M):$} \\
+      \\
+      \underline{$\subname{Dec_{CTR}}(m \in \M):$} \\
+      \\
+    }
+    \qquad
+    \codebox{
+      \underline{$\subname{GetTag}(m \in \M):$} \\
+      \\
+      \underline{$\subname{CheckTag}(m \in \M):$} \\
+      \\
+    }
+  }
+\end{center}
 
 \pagebreak
 
@@ -41,23 +73,9 @@ These define the Encryption and Decryption algorithms used by the program both t
 
 ## Primitives
 
+TODO move this
+
 Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). 
-
-\
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> klen = 128 \\
-      \> \\
-      \underline{$F_{AES}(k, d):$} \\
-      \> BLACK BOX \\
-      \> \\
-      \underline{$F_{AES}^{-1}(k, d):$} \\
-      \> BLACK BOX
-    }
-  }
-\end{center}
 
 ## Formal Scheme Definition
 
