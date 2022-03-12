@@ -347,7 +347,7 @@ PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](h
 
 A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $blen$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
 
-Lastly, $klen$ is the desired length of the key. While we are constricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
+Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
 
 \
 
@@ -417,12 +417,7 @@ The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys 
 
 ### Deriving keys from passwords
 
-We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. We know that $\subname{F}{AES}$ is a secure PRP, and so, a secure PRF as well. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements:
-
-1. the inputs and outputs are distinct
-2. the function is invertible
-
-Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build our PBKDF2.
+We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. We know that $\subname{F}{AES}$ is a secure PRP, and so, a secure PRF as well. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build our PBKDF2.
 
 TODO: rest of PBKDF2 defense
 https://www.tarsnap.com/scrypt.html
