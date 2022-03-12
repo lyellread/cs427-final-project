@@ -21,11 +21,17 @@ header-includes:
   - \include{macros.tex}
 ---
 
+<!-- 
+TODO: Fix F name throughout and subname is always used
+TODO: Check schemes for accuracy
+TODO: Standardize keyfile / key file
+TODO: Fix all references to reference Sigma, like \\K 
+-->
+
 \pagebreak
 
 # Abstract
 
-TODO: Standardize keyfile / key file
 
 As the final assessment for CS 427: Cryptography, we developed and proved the security of a program named `NOISE` (`N`ice `O`l' `I`nteractive `S`tream `E`ncryption). `NOISE` is made up of two tools which are accessible using the command line: a [Key Generation and Storage] module, and tools to perform [Stream Encryption and Decryption]. The former can generate random keys, encrypt these for storage in a key file using a user-supplied password, and retrieve keys from key files. The encryption and decryption functions are able to accept file inputs or read from and to `stdin` and `stdout` depending on the usage. 
 
@@ -49,8 +55,6 @@ TODO: no () on function calls
 
 Throughout `NOISE`, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
-TODO: Fix F name throughout and subname is always used
-TODO: Check schemes for accuracy
 TODO: Add Pad() and UnPad() here
 
 \begin{center}
@@ -134,7 +138,7 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 ## Formal Scheme Definition
 
 TODO: add desc
-TODO: Fix all references to reference Sigma, like \\K 
+
 
 
 \begin{center}
