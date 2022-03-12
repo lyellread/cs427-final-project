@@ -323,7 +323,7 @@ The keyfiles are encrypted without a MAC as a MAC requires additional secret key
 
 ## Primitives
 
-The two biggest primitives we will define here is a hash function, an HMAC function (for use as a PRF), and PBKDF2.
+The two biggest primitives we will define here is a hash function and PBKDF2.
 
 We will also use the $F_{AES}$ block cipher that we defined earlier. When we use $F_{AES}$ in the `Stream Encryption and Decryption` section, the key it takes is the "master key" that is outputted from this section. When we use $F_{AES}$ in here, it will not be used in the same way.
 
@@ -351,39 +351,15 @@ A Davies-Meyer function uses a block cipher to produce a hash. The "keys" that a
 
 \
 
-A block cipher is not itself a hash function but it can be used as a building block to one. The hashes produced by the Davies-Meyer function are effective, collision-resistant hashes. It is important to note that this is just one component that will be used for turning a password into a key. By itself, the Davies-Meyer function would be insufficient for that task.
-
-### HMAC (as a PRF)
-
-Now we will build an HMAC function with our Davies-Meyer compression function. This HMAC is an intermediate function for the PBKDF2 which will be transforming the chosen password into a key which can be used to encrypt and decrypt keyfiles.
-
-\
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> hlen = 128 \\
-      \> opad = ${0x5c}^\lambda$ \\
-      \> ipad = ${0x36}^\lambda$ \\
-      \underline{$\subname{HMAC}_{DM}(k, m):$} \\
-      \> if |k| > hlen: \\
-      \> \> $k := \subname{Hash}_{DM}(k)$ \\
-      \> x := $\subname{Hash}_{DM}(k \oplus$ ipad) \\
-      \> y := $k \oplus$ opad \\
-      \> return $\subname{Hash}_{DM}(y || x || m)$
-    }
-  }
-\end{center}
-
-\
-
-PBKDF2 requires a pseudorandom function as part of its functioning. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Therefore, we have defined an HMAC here utilizing our $\subname{Hash}_{DM}$ function.
+A block cipher is not itself a hash function but it can be used as a building block to one. The hashes produced by the Davies-Meyer function are effective, collision-resistant hashes.
 
 ### Password-Based Key Derivation Function 2 (PBKDF2)
 
-PBKDF2 is an established Key Derivation Function that will be doing the heavy lifting in turning a keyfile's password into a usable "master key" to decrypt it. This function repeatedly calls the previously-defined HMAC on the password (with a salt, etc) to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
+PBKDF2 is an established Key Derivation Function that will be doing the heavy lifting in turning a keyfile's password into a usable "master key" to decrypt it. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
 
-A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $klen$ is the desired length of the key. We can change this, however we are constricted to the key-lengths that our encryption algorithm can take, which is 128. $hlen$ is the fixed length of our hash output. In this scheme, our HMAC depends on our $\subname{Hash}_{DM}$ function that spits out 128 bit output. By using the same $\subname{F}_{AES}$ for both our hashing output and our encryption, we do constrict ourselves to specific input and output lengths throughout our component functions (namely, 128 bits). $c$ is the number of iterations that the HMAC should be applied. This should be a very large number.
+PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Isntead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A PRP is simply a PRF with additional requirements. Because of this, it's still a PRF, so we shall be using it for our PBKDF2.
+
+A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $klen$ is the desired length of the key. We can change this, however we are constricted to the key-lengths that our encryption algorithm can take, which is 128. $blen$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
 
 \
 
@@ -391,14 +367,14 @@ A few parameters are seen below. $s$ is a salt that can be an arbitrary length (
   \fcodebox{
     \codebox{
       \> klen := 128 \\
-      \> hlen := 128 \\
+      \> blen := 128 \\
       \> c := \\
       \underline{PBKDF2(p, s):} \\
-      \> for i = 1 to (klen/hlen): \\
-      \> \> $U_1$ := HMAC(p, s || i) \\
+      \> for i = 1 to (klen/blen): \\
+      \> \> $U_1 := \subname{F}_{AES}(p, s || i)$ \\
       \> \> $T_i$ := $U_1$ \\
       \> \> for j = 2 to c: \\
-      \> \> \> $U_j$ := HMAC(p, $U_{i-1}$) \\
+      \> \> \> $U_j := \subname{F}_{AES}(p, U_{i-1}$) \\
       \> \> \> $T_i := T_i \oplus U_j$ \\
       \> \> $T_i := T_i$
       \> return $T$
