@@ -88,12 +88,19 @@ TODO: Check schemes for accuracy
   }
 \end{center}
 
-## Explanation of Primitives
+## Block Cipher
 
-### Block Cipher
+Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher) for the AES block cipher implementation. 
 
-Our design utilizes a secure block cipher/PRP, $F$. $F$ will be the [AES block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. Our program utilizes a Python library for the AES block cipher implementation called [PyAES](https://github.com/ricmoo/pyaes#aes-block-cipher). 
+## Enc and Dec - CTR mode
 
+Our Encryption and Decryption modes utilize the standard CTR mode. This provides CPA security. This is implemented in an "Enc-then-MAC" scheme, which then provides CCA security. This uilizes our AES block cipher.
+
+## GetTag and CheckTag
+
+TODO: lowkey feel like you should rename gettag to $\subname{MAC}_{ECBC}$ so its in the same style as our F and its clear what we've implemented there.
+
+These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
 
 \pagebreak
 
