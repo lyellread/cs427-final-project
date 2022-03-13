@@ -23,7 +23,7 @@ def keygen(keyfile):
     # Create 3 key-encryption keys from password using PKBDF2
     passw_key, passw_mac1, passw_mac2 = common.chunk_blocks(common.pkbdf2(password, salt, common.LAMBDA * 3))
 
-    # generate 3 keys -- enc, mac1, mac2
+    # Generate 3 keys: enc, mac1, mac2
     keys = (
         common.get_random_bytes(common.LAMBDA)
         + common.get_random_bytes(common.LAMBDA)
@@ -50,7 +50,7 @@ def decrypt_key(keyfile):
         salt = bytes.fromhex(f.read((common.LAMBDA - 4) * 2))  # pull salt from start of file
         key_and_mac = bytes.fromhex(f.read())
 
-    # make sure read-in key is the correct size
+    # Make sure read-in key is the correct size
     if len(key_and_mac) != common.LAMBDA * 6:
         logging.error("Invalid password or corrupted key")
         exit(1)
