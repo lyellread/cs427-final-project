@@ -147,7 +147,11 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 
 ### Password-Based Key Derivation Function 2 (PBKDF2)
 
-To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
+To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile. 
+
+TODO: rest of PBKDF2 defense
+https://www.tarsnap.com/scrypt.html
+https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf 
 
 PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), an example PRF given is an HMAC. Instead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A secure PRP is a also a secure PRF. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build PBKDF2.
 
@@ -498,13 +502,7 @@ The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys 
 
 ## Security Proof and Reasoning
 
-### Deriving keys from passwords
-
-We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. 
-
-TODO: rest of PBKDF2 defense
-https://www.tarsnap.com/scrypt.html
-https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf 
+<!-- "Also we should just have to prove the parts of our primitives with pbkdf2 and we should be secure ig" -->
 
 ### Use of keyfile hashes
 
