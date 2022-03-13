@@ -189,7 +189,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
 
         ci = xor(prp(key, r), m[i])
         c.append(ci)
-        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Recombine array into a string of bytes.
     return b"".join(c)
@@ -227,7 +227,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
         # )
         mi = xor(prp(key, r), c[i])
         m.append(mi)
-        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Remove padding from the array of blocks
     m = unpad(m, LAMBDA)
@@ -318,16 +318,22 @@ def pkbdf2(passw: bytes, salt: bytes, output_length: int) -> bytes:
         return T_1 || T_2 ... || T_i
     """
 
-    ITERS = 2048
+    # Define reasonable number of iterations
+    ITERATIONS = 2048
 
     output = b""
-    passw = hash(passw)  # length-normalize inputs
+
+    # Take hash of password to normalize length to LAMBDA
+    passw = hash(passw)
+
+    # Ensure that salt is of proper length
     assert len(salt) == LAMBDA - 4, "Internal Error: PKBDF2 salt has incorrect length"
 
+    # Iterate PBKDF2 several times to generate key
     for i in range(ceil(output_length / LAMBDA)):
         iv = salt + i.to_bytes(4, byteorder="big")
         t = prp(passw, iv)
-        for c in range(1, ITERS):
+        for c in range(1, ITERATIONS):
             t = xor(t, prp(passw, t))
 
         output += t

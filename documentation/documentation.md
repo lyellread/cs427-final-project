@@ -55,9 +55,6 @@ As a point of clarification, there are multiple subroutines with names that hint
 
 ## Specifications
 
-TODO: set c in PBKDF
-TODO: get a hash in PBKDF
-
 Throughout `NOISE`, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
 \begin{center}
@@ -71,6 +68,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \\
       $\text{blen} := 128$ \comment{\#bits} \\
       $\text{klen} := 384$ \comment{\#bits} \\
+      $\text{I}_{\text{pass-deriv}} := 2048$ \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
       \> $k \gets \K$ \\
@@ -84,16 +82,20 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \> $r \gets \bits^{\text{blen}}$ \\
       \> $c_0 := r$ \\
       \> for $i = 1$ to $l$: \\
-      \> \> $c_i := \sig{F}(k, r) \oplus m_i$ \\
+      \> \> $c_i := \sig{F}_{\subname{AES-128}}(k, r) \oplus m_i$ \\
       \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
       \> return $c_0 || \cdots || c_l \in \C$\\
       \\
       \underline{$\subname{Dec}_{\text{CTR}}(k \in \K, c_0 || \cdots || c_l \in \C)$:} \\
       \> $r := c_0$ \\
       \> for $i = 1$ to $l$: \\
-      \> \> $m_i := \sig{F}(k, r) \oplus c_i$\\
+      \> \> $m_i := \sig{F}_{\subname{AES-128}}(k, r) \oplus c_i$\\
       \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
       \> return $m_1 || \cdots || m_l \in \M$ \\
+      \\
+      \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
+      \> \comment{\# AES-128 Encryption} \\
+      \> return $c \in \C$\\
       \\
       \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
       \> \comment{\# AES-128 Decryption} \\
@@ -101,38 +103,44 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
     }
     \qquad
     \codebox{
-      \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
-      \> \comment{\# AES-128 Encryption} \\
-      \> return $c \in \C$\\
-      \\
       \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M)$:} \\
       \> $x := m_l$ \\
       \> $t := \bit{0}^{\text{blen}}$ \\
       \> for $i=0$ to $i = l-1$: \\
-      \> \> $t := F(k_1, t \oplus m_i)$ \\
-      \> $t := F(k_2, t \oplus x)$ \\
+      \> \> $t := \sig{F}_{\subname{AES-128}}(k_1, t \oplus m_i)$ \\
+      \> $t := \sig{F}_{\subname{AES-128}}(k_2, t \oplus x)$ \\
       \> return $t \in \T$ \\
       \\
       \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
       \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
       \\
       \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Seen)$:} \\
+      \> $p := \sig{Hash}_{\text{D-M}}(p)$ \\
       \> for $i = 1$ to $\frac{\text{klen}}{\text{blen}}$: \\
-      \> \> $u_1 := \subname{F}_{\subname{AES-128}}(p, s || i)$ \\
+      \> \> $u_1 := \sig{F}_{\subname{AES-128}}(p, s || i)$ \\
       \> \> $t_i := u_1$ \\
-      \> \> for $j = 2$ to $c$: \\
-      \> \> \> $u_j := \subname{F}_{\subname{AES-128}}(p, u_{i-1}$) \\
+      \> \> for $j = 2$ to $\Sigma.\text{I}_{\text{pass-deriv}}$: \\
+      \> \> \> $u_j := \sig{F}_{\subname{AES-128}}(p, u_{i-1}$) \\
       \> \> \> $t_i := t_i \oplus u_j$ \\
       \> $t := t_1 || \cdots || t_{\frac{\text{klen}}{\text{blen}}}$ \\
       \> return $t \in \bits^\text{klen}$ \\
       \\
-      \underline{$\subname{Pad}(m)$:} \\
+      \underline{$\subname{Pad}(m \in \bits^*)$:} \\
       \> $d = [\text{blen}-(\subname{BitLength}(m) \text{ mod blen})]/8$ \\
       \> $m := m || [\bit{0x00}_0 || \cdots || \bit{0x00}_{(d-1)} || \subname{HexByte}(\text{d})]$ \\
+      \> return $m \in \M^*$ \\
       \\
-      \underline{$\subname{UnPad}(m)$:} \\
+      \underline{$\subname{UnPad}(m \in \M^*)$:} \\
       \> $d = \subname{GetLastByte}(m)$ \\
-      \> $m := m[:-d]$ \comment{\# Remove d bytes of padding}
+      \> $m := m[:-d]$ \comment{\# Remove d bytes of padding}\\
+      \> return $m \in \bits^*$\\
+      \\
+      \underline{$\subname{Hash}_{\text{D-M}}(m \in \bits^*)$:} \\
+      \> $h := \bit{0}^{\text{blen}}$ \\
+      \> $m_0 || \cdots || m_l := \sig{Pad}(m)$ \\
+      \> for $i=0$ to $l$: \\
+      \> \> $h := \sig{F}_{\subname{AES-128}}(m_i, h) \oplus h$ \\
+      \> return $h \in \M$
     }
   }
 \end{center}
