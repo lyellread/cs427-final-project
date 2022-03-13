@@ -482,12 +482,12 @@ The $\subname{GetKeys}$ function makes use of the primitives:
         \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\
         \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-pass}}, k_a) $ \\
         \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1-pass}, k_{\text{mac2-pass}}, c_k)$ \\
-        \> $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(c_k || t || s)$\\
+        \> $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(s || c_k || t)$\\
         \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$ \\
         \\
         \underline{$\subname{GetKeys}()$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
-        \> $c_k || t || s := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
+        \> $s || c_k || t := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
         \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
         \> if $\sig{CheckTag}(k_{\text{mac1-pass}}, k_{\text{mac2-pass}}, c_k, t) = \bit{false}$: \\
         \> \> return $\bit{err}$ \\
@@ -506,8 +506,8 @@ TODO: Casey Proof:
 
 $\subname{KeyGen}$ makes use of two sets of three keys:
 
-- The user's keys: $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ 
-- The master password-based keys: $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}}$
+- The user's keys: $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$ 
+- The master password-based keys: $(k_{\text{stream-pass}}, k_{\text{mac1-pass}}, k_{\text{mac2-pass}})$
 
 The usage of these keys is demonstrated in detail in [Formal Scheme Definition]. The master password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master password-based keyfile encryption, we are able to also use $\sig{MAC}_{\text{ECBC}}$ on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself. 
 
