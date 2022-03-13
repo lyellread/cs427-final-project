@@ -156,13 +156,11 @@ To effectively turn a password into an encryption key, `NOISE` implements $\sig{
 
 One consideration might be: why use PBKDF2 instead of a more modern KDF like [scrypt](https://www.tarsnap.com/scrypt.html) or [Argon2](https://github.com/P-H-C/phc-winner-argon2#argon2)? These modern KDFs were designed to address the issue of older KDFs being vulnerable to GPU cracking. As mentioned previously, we designed `NOISE` because we're prioritizing an educational demonstration of cryptographic concepts over an implementation of maximum security. `scrypt` itself makes calls to PBKDF2 in its [algorithm](https://datatracker.ietf.org/doc/html/rfc7914#section-6). PBKDF2 is a suitable primitive for use with `NOISE`.
 
-https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf 
-
 PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), an example PRF given is an HMAC. Instead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A secure PRP is a also a secure PRF. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build PBKDF2.
 
 A few parameters are seen in the above definition. $s$ is a salt that can be an arbitrary length. $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
 
-Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384 bits.
+Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a key of 384 bits that will be split later. A [NIST publication](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)^["Recommendation for Key Derivation Functions Using Pseudorandom Functions", Section 7.3] allows this usage of generating more than one key per password, as long as the keys selected from the KDF output are disjoint.
 
 \pagebreak
 
