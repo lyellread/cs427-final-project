@@ -53,6 +53,9 @@ TODO: no () on function calls
 
 # Primitives
 
+TODO: set c in PBKDF
+TODO: get a hash in PBKDF
+
 Throughout `NOISE`, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
 \begin{center}
@@ -138,7 +141,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
 
 ### Block Cipher
 
-Our design utilizes an Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
+Our design utilizes an Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\subname{AES-128}}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. This block cipher is not implemented above in the $\Sigma$ scheme, as the AES implementation is too long to include in this document.
 
 ### Block Cipher Mode
 
@@ -150,7 +153,7 @@ TODO: Add description of rationale for choosing ECBC-MAC.
 
 These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
 
-### Password-Based Key Derivation Function 2 (PBKDF2)
+### Password Based Key Derivation Function
 
 To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function (KDF). This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile. 
 
@@ -436,17 +439,31 @@ Here we can see in this function, the left and right libraries are indistinguish
 
 # Key Generation and Storage
 
-These define the functions that handle generation and storage of keyfiles used by the program. These keyfiles are generated with the function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
+<!-- These define the functions that handle generation and storage of keyfiles used by the program. These keyfiles are generated with the function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
 
 These keyfiles are stored encrypted with a password that varies per keyfile. This "password encryption" is implemented by way of Password-Based Key Derivation Function 2 (PBKDF2). This will be expanded upon in the Primitives section.
 
 The keyfiles are also encrypted with a MAC on them. This verifies that if the keyfile was maliciously modified, that this would be detected and you would be unable to use it. Using it would cause errors to the proper encryption and decryption. Of course, using a MAC requires additional keys, and we're only using one password. This is handled by having PBKDF2 ouput a much longer "key". This can then be subdivided into several keys. More on the security properties of this are discussed later.
+ -->
+
+`NOISE` features a user-accessible function for key generation ($\lib{KeyGen}$'s function$\subname{KeyGen}$, not to be confused with $\sig{KeyGen}$). This function is responsible for using a user-supplied master password to encrypt new, randomly-generated keys. `NOISE` also features a function named $\subname{GetKeys}$, which is program-internal, and is responsible for retrieving the keys from the keyfile the user has specified, decrypting them with the user's password before returning them to the program.
 
 ## Formal Scheme Definition
 
-Our program relies on three secret keys: a key for encryption and decryption of a file, and two keys to generate a MAC for the encrypted file's contents.
+The Key Generation and Storage part of `NOISE` is fundamentally responsible for properly creating, storing and retrieving cryptographic keys. 
 
-The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys will be extracted and used internally within the program only. This is reflected below:
+The $\subname{KeyGen}$ function makes use of the primitives:
+
+- $\sig{GetSalt}$: A simple function that randomly samples from the set of all possible salt values, implemented in [Primitives].
+- $\sig{PBKDF2}$: Password Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password Based Key Derivation Function].
+- $\sig{Enc}_{\text{CTR}}$: Counter (CTR) block cipher mode encryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{GetTag}_{\text{ECBC}}$: ECBC MAC, described further in [Message Authentication Code] and implemented in [Primitives].
+
+The $\subname{GetKeys}$ function makes use of the primitives:
+
+- $\sig{PBKDF2}$: Password Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password Based Key Derivation Function].
+- $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC Check, described further in [Message Authentication Code] and implemented in [Primitives].
 
 \begin{center}
   \codebox{
@@ -480,39 +497,6 @@ The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys 
         \> $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}} := \sig{Dec}_\text{CTR}(k_{\text{stream-temp}}, c_k)$ \\
         \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
       }
-    }
-  }
-\end{center}
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> KeyFile := KeyGen()
-    }
-    \qquad
-    \codebox{
-      \underline{KeyGen():} \\
-      \> $p :=$ getpass() \\
-      \> $s \gets \{0, 1\}^{\lambda}$ \\
-      \> $K := \subname{PBKDF2}(p, s)$ \\
-      \> $key \gets \{0, 1\}^{\lambda}$ \\
-      \> $mac1 \gets \{0, 1\}^{\lambda}$ \\
-      \> $mac2 \gets \{0, 1\}^{\lambda}$ \\
-      \> $kh = \subname{Hash}_{DM}(k||mac||mac2)$ \\
-      \> $E := \subname{Enc}_{CTR}(K, key||mac1||mac2||kh)$ \\
-      \> return $E||s$
-    }
-    \qquad
-    \codebox{
-      \underline{DecryptKey():} \\
-      \> $p :=$ getpass() \\
-      \> $s := Keyfile[-\lambda :]$ \\
-      \> $K := \subname{PBKDF2}(p, s)$ \\
-      \> $k, mac1, mac2, H := \subname{Dec}_{CTR}(K, KeyFile[: -\lambda])$ \\
-      \> $keyH := \subname{Hash}_{DM}(k||mac1||mac2)$ \\
-      \> if $H \neq keyH$: \\
-      \> \> return $\err$ \\
-      \> return $k, mac1, mac2$
     }
   }
 \end{center}
