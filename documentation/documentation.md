@@ -26,6 +26,8 @@ TODO: Fix F name throughout and subname is always used
 TODO: Check schemes for accuracy
 TODO: Standardize keyfile / key file
 TODO: Fix all references to reference Sigma, like \\K 
+TODO: Add footnotes for all link references
+TODO: no () on function calls in-text
 -->
 
 \pagebreak
@@ -47,11 +49,11 @@ Through this report, the standard notations from CS 427: Cryptography will be us
 
 As a point of clarification, there are multiple subroutines with names that hint at Key Generation. Specifically, at first glance, the construction in [Key Generation and Storage] might be confused with $\sig{KeyGen}$, however this abstraction of $\sig{KeyGen}()$ into the set of primitives in [Primitives] represents an attempt at mirroring the way that `NOISE` is programmed.
 
-TODO: no () on function calls
-
 \pagebreak
 
 # Primitives
+
+## Specifications
 
 TODO: set c in PBKDF
 TODO: get a hash in PBKDF
@@ -137,33 +139,37 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
 
 \pagebreak
 
-## Explanation of Primitive Choices
-
-### Block Cipher
+## Block Cipher
 
 Our design utilizes an Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\subname{AES-128}}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. This block cipher is not implemented above in the $\Sigma$ scheme, as the AES implementation is too long to include in this document.
 
-### Block Cipher Mode
+## Block Cipher Mode
 
 `NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
 
-### Message Authentication Code
+## Message Authentication Code
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
 These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
 
-### Password Based Key Derivation Function
+## Password Based Key Derivation Function
 
-To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function (KDF). This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile. 
+To use a user-supplied password as a cryptographic key, `NOISE` implements $\sig{PBKDF2}$. $\sig{PBKDF2}$ is a Password Based Key Derivation Function which performs a large number of operations to derive a key from a password using a Pseudo Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password. 
 
-One consideration might be: why use PBKDF2 instead of a more modern KDF like [scrypt](https://www.tarsnap.com/scrypt.html) or [Argon2](https://github.com/P-H-C/phc-winner-argon2#argon2)? These modern KDFs were designed to address the issue of older KDFs being vulnerable to GPU cracking. As mentioned previously, we designed `NOISE` because we're prioritizing an educational demonstration of cryptographic concepts over an implementation of maximum security. `scrypt` itself makes calls to PBKDF2 in its [algorithm](https://datatracker.ietf.org/doc/html/rfc7914#section-6). PBKDF2 is a suitable primitive for use with `NOISE`.
+TODO: Streamline these next 2 para's
 
-PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), an example PRF given is an HMAC. Instead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A secure PRP is a also a secure PRF. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build PBKDF2.
+A few parameters are seen in the above definition. $s$ is a salt that can be an arbitrary length. $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our $\sig{PBKDF2}$ output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
 
-A few parameters are seen in the above definition. $s$ is a salt that can be an arbitrary length. $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a key of 384 bits that will be split later. A [NIST publication](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)^[*Recommendation for Key Derivation Functions Using Pseudorandom Functions*, Section 7.3] allows this usage of generating more than one key per password, as long as the keys selected from the KDF output are disjoint.
 
-Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a key of 384 bits that will be split later. A [NIST publication](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)^["Recommendation for Key Derivation Functions Using Pseudorandom Functions", Section 7.3] allows this usage of generating more than one key per password, as long as the keys selected from the KDF output are disjoint.
+### Considerations When Choosing KDF
+
+When choosing the constructions to use as the building blocks for `NOISE`, we encountered several possible Key Derivation Functions (KDF). We opted to use $\sig{PBKDF2}$ instead of other KDFs like [`scrypt`](https://www.tarsnap.com/scrypt.html) or [`argon2`](https://github.com/P-H-C/phc-winner-argon2#argon2). This decision was made consciously as 'modern' KDFs like `argon2` and `scrypt` were designed to address vulnerabilities in older KDFs which allowed them to be more easily attacked with brute force using Graphical Processing Units (GPUs). In order to keep the primitives of `NOISE` readable and simple, we opted to implement a less secure (but simpler) KDF, $\sig{PBKDF2}$,to remain in keeping with our goal of making `NOISE` an educational demonstration of cryptographic concepts. 
+
+### Pseudo Random Function for PBKDF2
+
+$\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), $\subname{HMAC-SHA-1}$ is suggested as a PRF. Instead, we will be using is our AES Pseudo Random Permutation (PRP, described in [Block Cipher]), $\sig{F}_{\subname{AES-128}}$ defined in [Primitives]. By [Corollary 6.8 in The Joy of Cryptography](https://joyofcryptography.com/pdf/book.pdf#theorem.464), we can assert that our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF. Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build $\sig{PBKDF2}$.
 
 \pagebreak
 
