@@ -40,9 +40,10 @@ if __name__ == "__main__":
 
     if ARGS["--test"]:
         import pytest
-        tests = ['modules/tests.py']
+
+        tests = ["modules/tests.py"]
         if ARGS["--verbose"]:
-            tests.append('-v')
+            tests.append("-v")
         exit(pytest.main(tests))
 
     logging.debug(f"User-supplied command line arguments: {ARGS}")

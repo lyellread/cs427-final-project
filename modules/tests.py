@@ -11,7 +11,8 @@ test_messages = [
     b"",
 ]
 
-@pytest.mark.parametrize('msg', test_messages)
+
+@pytest.mark.parametrize("msg", test_messages)
 def test_encrypt_determinism(msg):
     # print("\n=== E/D DET TEST === ")
 
@@ -26,10 +27,10 @@ def test_encrypt_determinism(msg):
 
     # print(f"Encrypt is non-deterministic : {ctx1!=ctx2}")
 
-    assert ctx1 != ctx2
+    assert ctx1 != ctx2, "Encrypt should be non-deterministic"
 
 
-@pytest.mark.parametrize('msg', test_messages)
+@pytest.mark.parametrize("msg", test_messages)
 def test_pad_determinism(msg):
     # print(f"\n=== PAD UNPAD DET TEST ===")
 
@@ -41,10 +42,10 @@ def test_pad_determinism(msg):
 
     # print(f"Pad / Unpad Are Inverses : {padded==unpadded}")
 
-    assert unpadded == common.chunk_blocks(msg)
+    assert unpadded == common.chunk_blocks(msg), "Pad / Unpad should be inverses"
 
 
-@pytest.mark.parametrize('msg', test_messages)
+@pytest.mark.parametrize("msg", test_messages)
 def test_mac_determinism(msg):
     # print(f"\n=== MAC DET TEST ===")
 
@@ -61,10 +62,10 @@ def test_mac_determinism(msg):
 
     # print(f"MAC is Deterministic : {mac1==mac2}")
 
-    assert mac1 == mac2
+    assert mac1 == mac2, "MAC should be deterministic"
 
 
-@pytest.mark.parametrize('msg', test_messages)
+@pytest.mark.parametrize("msg", test_messages)
 def test_encrypt_decrypt(msg):
     # print("\n=== E/D DEC TEST === ")
 
@@ -77,10 +78,10 @@ def test_encrypt_decrypt(msg):
     # print(f"Decrypted message : {out.hex()}")
     # print(f"Successful        : {msg == out}")
 
-    assert msg == out
+    assert msg == out, "Decrypt of Encrypt should match original message"
 
 
-@pytest.mark.parametrize('msg', test_messages)
+@pytest.mark.parametrize("msg", test_messages)
 def test_hash_determinism(msg):
 
     # print(f"\n=== HASH TEST ===")
@@ -92,13 +93,14 @@ def test_hash_determinism(msg):
 
     # print(f"Hash is Deterministic : {hh1==hh2}")
 
-    assert hh1 == hh2
+    assert hh1 == hh2, "Hash should be deterministic"
 
-@pytest.mark.parametrize('msg', test_messages)
+
+@pytest.mark.parametrize("msg", test_messages)
 def test_pkbdf_determinism(msg):
-    # salt = common.get_random_bytes(common.LAMBDA - 32 // 8)
-    salt = b''
-    keys1 = common.pkbdf2(msg, salt)
-    keys2 = common.pkbdf2(msg, salt)
+    salt = common.get_random_bytes(common.LAMBDA)
+    keys1 = common.pkbdf2(msg, salt, common.LAMBDA * 3)
+    keys2 = common.pkbdf2(msg, salt, common.LAMBDA * 3)
+
     # PKBDF2 should be deterministic for the same pw and key
-    assert keys1 == keys2
+    assert keys1 == keys2, "PKBDF2 should be deterministic"

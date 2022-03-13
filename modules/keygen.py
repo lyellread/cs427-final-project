@@ -15,10 +15,13 @@ def keygen(keyfile):
     ), f"Keyfile {keyfile} exists already, and would be overwritten."
 
     # Get user password input
-    key_password = getpass.getpass(prompt="Password: ")
+    password = getpass.getpass(prompt="Password: ")
 
-    # Calculate hash of user input
-    password_hash = common.hash(key_password.encode())
+    # Generate a random value to use as a salt
+    salt = common.get_random_bytes(common.LAMBDA)
+
+    # Create 3 key-encryption keys from password using PKBDF2
+    passw_key, passw_mac1, passw_mac2 = common.chunk_blocks(common.pkbdf2(password, salt, common.LAMBDA * 3))
 
     # generate 3 keys -- enc, mac1, mac2
     keys = (
@@ -27,18 +30,15 @@ def keygen(keyfile):
         + common.get_random_bytes(common.LAMBDA)
     )
 
-    # append hash for semi-validity checking
-    # cant really use a MAC here since we only have one key (the password)
-    keys += common.hash(keys)
-
-    # Check that the key length is as expected
-    assert len(keys) == 4 * common.LAMBDA, "Internal Error: Length of key and hash is not as expected."
-
     # Encrypt key using hash of the user password
-    encrypted_key = common.encrypt(password_hash, keys)
+    encrypted_key = common.encrypt(passw_key, keys)
 
-    # Store encrypted key to file
+    # Append MAC to end of ciphertext
+    encrypted_key += common.mac(passw_mac1, passw_mac2, encrypted_key)
+
+    # Write password salt and encrypted keys to file
     with open(keyfile, "w") as f:
+        f.write(salt.hex())
         f.write(encrypted_key.hex())
 
 
@@ -47,26 +47,32 @@ def decrypt_key(keyfile):
 
     # Store encrypted key to file
     with open(keyfile, "r") as f:
-        encrypted_key = bytes.fromhex(f.read())
+        salt = bytes.fromhex(f.read(common.LAMBDA * 2))  # pull salt from start of file
+        key_and_mac = bytes.fromhex(f.read())
 
-    # Decrypt the encrypted key by getting password from the user
-    key_password = getpass.getpass(prompt="Password: ")
-
-    # Calculate hash of user input
-    password_hash = common.hash(key_password.encode())
-
-    # Decrypt and check key
-    combined_keys = common.decrypt(password_hash, encrypted_key)
-
-    keys = common.chunk_blocks(combined_keys)
-    hash_tag = keys.pop()
-
-    if hash_tag != common.hash(b"".join(keys)):
+    # make sure read-in key is the correct size
+    if len(key_and_mac) != common.LAMBDA * 6:
         logging.error("Invalid password or corrupted key")
         exit(1)
 
+    # Decrypt the encrypted key by getting password from the user
+    password = getpass.getpass(prompt="Password: ")
+
+    # Create 3 key-encryption keys from password using PKBDF2
+    passw_key, passw_mac1, passw_mac2 = common.chunk_blocks(common.pkbdf2(password, salt, common.LAMBDA * 3))
+
+    # Verify MAC before decrypting
+    encrypted_key = key_and_mac[: -common.LAMBDA]
+    stored_mac = key_and_mac[-common.LAMBDA :]
+
+    if stored_mac != common.mac(passw_mac1, passw_mac2, encrypted_key):
+        logging.error("Invalid password or corrupted key")
+        exit(1)
     else:
         logging.debug("Key decrypted successfully")
 
+    # Decrypt and check key
+    combined_keys = common.decrypt(passw_key, encrypted_key)
+
     # Return the decrypted key
-    return common.chunk_blocks(keys)[0]
+    return common.chunk_blocks(combined_keys)

@@ -143,7 +143,7 @@ def unpad(msg: list, length=LAMBDA) -> list:
 
         # handle empty array correctly
         if len(msg) == 0:
-            msg.append(b'')
+            msg.append(b"")
 
     else:
         # We must manipulate the bytes of the last block
@@ -301,7 +301,7 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     return prp(key2, xor(t, last_block))
 
 
-def pkbdf2(passw: bytes, salt: bytes) -> bytes:
+def pkbdf2(passw: bytes, salt: bytes, output_length: int) -> bytes:
     """
     PKBDF2 is a secure way to extend a key to a key of a desired length
     using an HMAC and padding over many iterations.
@@ -320,14 +320,13 @@ def pkbdf2(passw: bytes, salt: bytes) -> bytes:
     """
 
     ITERS = 2048
-    OUT_LEN = 3 * LAMBDA
 
     output = b""
-    passw = hash(passw) # length-normalize inputs
+    passw = hash(passw)  # length-normalize inputs
 
-    for i in range(OUT_LEN // LAMBDA):
+    for i in range(ceil(output_length / LAMBDA)):
         iv = hash(salt + i.to_bytes(32, byteorder="big"))
-        assert len(iv) == LAMBDA, f'Internal Error: PKBDF2 IV has incorrect length {len(iv)}, should be {LAMBDA}'
+        assert len(iv) == LAMBDA, f"Internal Error: PKBDF2 IV has incorrect length {len(iv)}, should be {LAMBDA}"
         t = prp(passw, iv)
         for c in range(1, ITERS):
             t = xor(t, prp(passw, t))
