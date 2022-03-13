@@ -301,7 +301,7 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     return prp(key2, xor(t, last_block))
 
 
-def pkbdf2(passw: bytes, salt: bytes):
+def pkbdf2(passw: bytes, salt: bytes) -> bytes:
     """
     PKBDF2 is a secure way to extend a key to a key of a desired length
     using an HMAC and padding over many iterations.
@@ -319,18 +319,19 @@ def pkbdf2(passw: bytes, salt: bytes):
         return T_1 || T_2 ... || T_i
     """
 
-    ITERS = 1024
+    ITERS = 2048
     OUT_LEN = 3 * LAMBDA
 
     output = b""
+    passw = hash(passw) # length-normalize inputs
 
-    for i in range(OUT_LEN / LAMBDA):
-        iv = salt + i.to_bytes(32, byteorder="big")
-        assert len(iv) == LAMBDA, 'Internal Error: PKBDF2 IV has incorrect length'
+    for i in range(OUT_LEN // LAMBDA):
+        iv = hash(salt + i.to_bytes(32, byteorder="big"))
+        assert len(iv) == LAMBDA, f'Internal Error: PKBDF2 IV has incorrect length {len(iv)}, should be {LAMBDA}'
         t = prp(passw, iv)
         for c in range(1, ITERS):
             t = xor(t, prp(passw, t))
 
-        output.append(t)
+        output += t
 
     return output

@@ -93,3 +93,12 @@ def test_hash_determinism(msg):
     # print(f"Hash is Deterministic : {hh1==hh2}")
 
     assert hh1 == hh2
+
+@pytest.mark.parametrize('msg', test_messages)
+def test_pkbdf_determinism(msg):
+    # salt = common.get_random_bytes(common.LAMBDA - 32 // 8)
+    salt = b''
+    keys1 = common.pkbdf2(msg, salt)
+    keys2 = common.pkbdf2(msg, salt)
+    # PKBDF2 should be deterministic for the same pw and key
+    assert keys1 == keys2
