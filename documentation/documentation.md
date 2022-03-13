@@ -152,10 +152,10 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 
 ### Password-Based Key Derivation Function 2 (PBKDF2)
 
-To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile. 
+To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function (KDF). This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile. 
 
-TODO: rest of PBKDF2 defense
-https://www.tarsnap.com/scrypt.html
+One consideration might be: why use PBKDF2 instead of a more modern KDF like [scrypt](https://www.tarsnap.com/scrypt.html) or [Argon2](https://github.com/P-H-C/phc-winner-argon2#argon2)? These modern KDFs were designed to address the issue of older KDFs being vulnerable to GPU cracking. As mentioned previously, we designed `NOISE` because we're prioritizing an educational demonstration of cryptographic concepts over an implementation of maximum security. `scrypt` itself makes calls to PBKDF2 in its [algorithm](https://datatracker.ietf.org/doc/html/rfc7914#section-6). PBKDF2 is a suitable primitive for use with `NOISE`.
+
 https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf 
 
 PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), an example PRF given is an HMAC. Instead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A secure PRP is a also a secure PRF. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build PBKDF2.
