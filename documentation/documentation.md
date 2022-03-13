@@ -64,12 +64,17 @@ TODO: Add Pad() and UnPad() here
       $\M = \bits^{128}$ \\
       $\C = \bits^{128}$ \\
       $\T = \bits^{128}$ \\
+      $\Seen = \bits^{128}$ \\
       \\
       $\text{blen} := 128$ \comment{\#bits} \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
       \> $k \gets \K$ \\
       \> return $k \in \K$ \\
+      \\
+      \underline{$\subname{GetSalt}()$:}\\
+      \> $s \gets \Seen$ \\
+      \> return $s \in \Seen$ \\
       \\
       \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
       \> $r \gets \bits^{\text{blen}}$ \\
@@ -138,8 +143,6 @@ These two functions define our MAC scheme, which is an ECBC-MAC. This relies on 
 ## Formal Scheme Definition
 
 TODO: add desc
-
-
 
 \begin{center}
   \codebox{
@@ -226,11 +229,7 @@ To prove that a scheme has CCA security, we must prove that two random plaintext
   }
 \end{center}
 
-\
-
 From here, we will walk through the proof for the left library.
-
-\
 
 \begin{center}
   \titlecodebox{$\lib{CCA-L}^\Sigma$}{
@@ -269,13 +268,9 @@ From here, we will walk through the proof for the left library.
   }
 \end{center}
 
-\
-
 Next, we can turn our attention to the linked encryption scheme. Here we see that for each block, we calculate $F(k, m_i||r)$ for the corresponding ciphertext block. $r$ is sampled randomly, so the chance of collision is $\frac{1}{2^{\text{blen}}}$. However, we are doing counter mode, so $r$ for each subsequent block in the message is deterministic, for $l$ blocks in the message. Still, the rate of collision comes to $\frac{l}{2^{\text{blen}}}$. The $l$ increases much slower than the $2^{\text{blen}}$, which means the rate of collisions is still negligible.
 
 Because $r$ is sampled randomly and has a neglible rate of collisions, $m_i||r$ also has a collision rate of $\frac{l}{2^{\text{blen}}}$ even when the same $m_i$ is inputted. It does not matter what $m_i$ is when we concatenate it with $r$ and put it through the PRP $F$. To illustrate this, we can apply the following transformation:
-
-\
 
 \begin{center}
   \titlecodebox{$\lib{CCA-L}^\Sigma$}{
@@ -314,11 +309,7 @@ Because $r$ is sampled randomly and has a neglible rate of collisions, $m_i||r$ 
   }
 \end{center}
 
-\
-
 Now, $m_{1L}||...||m_{lL}$ is not being used by the $Enc_{CTR}$ function; we can change it to some other name without disrupting the function of the encryption scheme. We can rename this to $m_{1R}||...||m_{lR}$ and inline it into the library.
-
-\
 
 \begin{center}
   \titlecodebox{$\lib{CCA-L}^\Sigma$}{
@@ -357,11 +348,7 @@ Now, $m_{1L}||...||m_{lL}$ is not being used by the $Enc_{CTR}$ function; we can
   }
 \end{center}
 
-\
-
 Let's inline the whole linked function, and re-consider the right library.
-
-\
 
 \begin{center}
   \titlecodebox{$\lib{CCA-L}^\Sigma$}{
@@ -423,8 +410,6 @@ A few parameters are seen below. $s$ is a salt that can be an arbitrary length (
 
 Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
 
-\
-
 \begin{center}
   \fcodebox{
     \codebox{
@@ -444,15 +429,47 @@ Lastly, $klen$ is the desired length of the key. While we are restricted to the 
   }
 \end{center}
 
-\
-
 ## Formal Scheme Definition
 
 Our program relies on three secret keys: a key for encryption and decryption of a file, and two keys to generate a MAC for the encrypted file's contents.
 
 The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys will be extracted and used internally within the program only. This is reflected below:
 
-\
+\begin{center}
+  \codebox{
+    \titlecodebox{$\texttt{\upshape NOISE}$}{
+      \comment{\# Generate keys} \\
+      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$ \\
+      \\
+      \comment{\# Get keys from file} \\
+      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$
+    }
+    $\link$
+    \titlecodebox{\lib{KeyGen}}{
+      \codebox{
+        \underline{$\subname{KeyGen}()$:} \\
+        \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
+        \> $s \gets \sig{GetSalt}$ \\
+        \> $k_{\text{stream-temp}} || k_{\text{mac1-temp}} || k_{\text{mac2-temp}} := \sig{PBKDF2}(p, s)$ \\
+        \> $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} \gets \sig{KeyGen}$ \\
+        \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\
+        \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-temp}}, k_a) $ \\
+        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1-temp}, k_{\text{mac2-temp}}, c_k)$ \\
+        \> $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(c_k || t || s)$\\
+        \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$ \\
+        \\
+        \underline{$\subname{GetKeys}()$:} \\
+        \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
+        \> $c_k || t || s := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
+        \> $k_{\text{stream-temp}} || k_{\text{mac1-temp}} || k_{\text{mac2-temp}} := \sig{PBKDF2}(p, s)$ \\
+        \> if $\sig{CheckTag}(k_{\text{mac1-temp}}, k_{\text{mac2-temp}}, c_k, t) = \bit{false}$: \\
+        \> \> return $\bit{err}$ \\
+        \> $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}} := \sig{Dec}_\text{CTR}(k_{\text{stream-temp}}, c_k)$ \\
+        \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
+      }
+    }
+  }
+\end{center}
 
 \begin{center}
   \fcodebox{
