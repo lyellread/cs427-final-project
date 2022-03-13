@@ -7,6 +7,7 @@ name = "pypi"
 docopt = "*"
 pyaes = "*"
 cryptography = "*"
+pytest = "*"
 
 [dev-packages]
 

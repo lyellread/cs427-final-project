@@ -31,20 +31,21 @@ if __name__ == "__main__":
 
     ARGS = docopt(__doc__)
 
+    # Configure log output
     if ARGS["--verbose"]:
         level = logging.DEBUG
     else:
         level = logging.WARN
-
-    # Configure Logging
     logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
-    logging.debug(f"User-supplied command line arguments: {ARGS}")
 
     if ARGS["--test"]:
-        from modules import test
+        import pytest
+        tests = ['modules/tests.py']
+        if ARGS["--verbose"]:
+            tests.append('-v')
+        exit(pytest.main(tests))
 
-        test.test_all()
-        exit()
+    logging.debug(f"User-supplied command line arguments: {ARGS}")
 
     # Check whether STDIN or STDOUT are specified, set files appropriately
     if ARGS["KEYFILE"] == "-" or ARGS["KEYFILE"] is None:
