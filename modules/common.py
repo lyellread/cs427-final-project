@@ -322,10 +322,10 @@ def pkbdf2(passw: bytes, salt: bytes, output_length: int) -> bytes:
 
     output = b""
     passw = hash(passw)  # length-normalize inputs
+    assert len(salt) == LAMBDA - 4, "Internal Error: PKBDF2 salt has incorrect length"
 
     for i in range(ceil(output_length / LAMBDA)):
-        iv = hash(salt + i.to_bytes(32, byteorder="big"))
-        assert len(iv) == LAMBDA, "Internal Error: PKBDF2 IV has incorrect length"
+        iv = salt + i.to_bytes(4, byteorder="big")
         t = prp(passw, iv)
         for c in range(1, ITERS):
             t = xor(t, prp(passw, t))

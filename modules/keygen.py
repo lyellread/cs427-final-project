@@ -18,7 +18,7 @@ def keygen(keyfile):
     password = getpass.getpass(prompt="Password: ")
 
     # Generate a random value to use as a salt
-    salt = common.get_random_bytes(common.LAMBDA)
+    salt = common.get_random_bytes(common.LAMBDA - 4)
 
     # Create 3 key-encryption keys from password using PKBDF2
     passw_key, passw_mac1, passw_mac2 = common.chunk_blocks(common.pkbdf2(password, salt, common.LAMBDA * 3))
@@ -47,7 +47,7 @@ def decrypt_key(keyfile):
 
     # Store encrypted key to file
     with open(keyfile, "r") as f:
-        salt = bytes.fromhex(f.read(common.LAMBDA * 2))  # pull salt from start of file
+        salt = bytes.fromhex(f.read((common.LAMBDA - 4) * 2))  # pull salt from start of file
         key_and_mac = bytes.fromhex(f.read())
 
     # make sure read-in key is the correct size

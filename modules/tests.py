@@ -98,7 +98,7 @@ def test_hash_determinism(msg):
 
 @pytest.mark.parametrize("msg", test_messages)
 def test_pkbdf_determinism(msg):
-    salt = common.get_random_bytes(common.LAMBDA)
+    salt = common.get_random_bytes(common.LAMBDA - 4)
     keys1 = common.pkbdf2(msg, salt, common.LAMBDA * 3)
     keys2 = common.pkbdf2(msg, salt, common.LAMBDA * 3)
 
