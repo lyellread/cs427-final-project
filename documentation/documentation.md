@@ -55,8 +55,6 @@ TODO: no () on function calls
 
 Throughout `NOISE`, several primitives are used. These primitives are defined below as member subroutines to the scheme $\Sigma$.
 
-TODO: Add Pad() and UnPad() here
-
 \begin{center}
   \titlecodebox{$\Sigma$}{
     \codebox{
@@ -64,10 +62,10 @@ TODO: Add Pad() and UnPad() here
       $\M = \bits^{128}$ \\
       $\C = \bits^{128}$ \\
       $\T = \bits^{128}$ \\
-      $\Seen = \bits^{128}$ \\
+      $\Seen = \bits^{96}$ \\
       \\
       $\text{blen} := 128$ \comment{\#bits} \\
-      $\text{klen} := 128$ \comment{\#bits} \\
+      $\text{klen} := 384$ \comment{\#bits} \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
       \> $k \gets \K$ \\
@@ -90,17 +88,17 @@ TODO: Add Pad() and UnPad() here
       \> for $i = 1$ to $l$: \\
       \> \> $m_i := \sig{F}(k, r) \oplus c_i$\\
       \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
-      \> return $m_1 || \cdots || m_l \in \M$
+      \> return $m_1 || \cdots || m_l \in \M$ \\
+      \\
+      \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
+      \> \comment{\# AES-128 Decryption} \\
+      \> return $m \in \M$
     }
     \qquad
     \codebox{
       \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
       \> \comment{\# AES-128 Encryption} \\
       \> return $c \in \C$\\
-      \\
-      \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
-      \> \comment{\# AES-128 Decryption} \\
-      \> return $m \in \M$\\
       \\
       \underline{$\subname{GetTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M)$:} \\
       \> $x := m_l$ \\
@@ -113,16 +111,23 @@ TODO: Add Pad() and UnPad() here
       \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
       \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
       \\
-      \underline{$\subname{PBKDF2}(p, s)$:} \\
-      \> for $i = 1$ to $(3*\text{klen}/\text{blen})$: \\
-      \> \> $U_1 := \subname{F}_{AES}(p, s || i)$ \\
-      \> \> $T_i$ := $U_1$ \\
+      \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Seen)$:} \\
+      \> for $i = 1$ to $\frac{\text{klen}}{\text{blen}}$: \\
+      \> \> $u_1 := \subname{F}_{\subname{AES-128}}(p, s || i)$ \\
+      \> \> $t_i := u_1$ \\
       \> \> for $j = 2$ to $c$: \\
-      \> \> \> $U_j := \subname{F}_{AES}(p, U_{i-1}$) \\
-      \> \> \> $T_i := T_i \oplus U_j$ \\
-      \> \> $T_i := T_i$ \\
-      \> return $T$
+      \> \> \> $u_j := \subname{F}_{\subname{AES-128}}(p, u_{i-1}$) \\
+      \> \> \> $t_i := t_i \oplus u_j$ \\
+      \> $t := t_1 || \cdots || t_{\frac{\text{klen}}{\text{blen}}}$ \\
+      \> return $t \in \bits^\text{klen}$ \\
       \\
+      \underline{$\subname{Pad}(m)$:} \\
+      \> $d = [\text{blen}-(\subname{BitLength}(m) \text{ mod blen})]/8$ \\
+      \> $m := m || [\bit{0x00}_0 || \cdots || \bit{0x00}_{(d-1)} || \subname{HexByte}(\text{d})]$ \\
+      \\
+      \underline{$\subname{UnPad}(m)$:} \\
+      \> $d = \subname{GetLastByte}(m)$ \\
+      \> $m := m[:-d]$ \comment{\# Remove d bytes of padding}
     }
   }
 \end{center}
@@ -139,7 +144,7 @@ Our design utilizes an Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-12
 
 `NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
 
-### GetTag and CheckTag
+### Message Authentication Code
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
@@ -167,7 +172,19 @@ Lastly, $klen$ is the desired length of the key. While we are restricted to the 
 
 ## Formal Scheme Definition
 
-TODO: add desc
+The purpose of the Stream Encryption and Decryption functions are to encrypt and decrypt large amounts of data in a secure fashion given a user supplied keyfile (generated with [Key Generation and Storage]). 
+
+The $\subname{Enc}_{\text{Stream}}$ function makes use of the primitives:
+
+- $\sig{Pad}$: A simple padding scheme, roughly implemented in [Primitives].
+- $\sig{Enc}_{\text{CTR}}$: Counter (CTR) block cipher mode encryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{GetTag}_{\text{ECBC}}$: ECBC MAC, described further in [Message Authentication Code] and implemented in [Primitives].
+
+The $\subname{Dec}_{\text{Stream}}$ function makes use of the primitives:
+
+- $\sig{UnPad}$: The padding removal part of our simple padding scheme, roughly implemented in [Primitives].
+- $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC check, described further in [Message Authentication Code] and implemented in [Primitives].
 
 \begin{center}
   \codebox{
@@ -526,6 +543,11 @@ To combat these issues, we made a variety of changes. Firstly, we returned to no
 
 One thing that we got right in the initial design was quickly identifying AES as the block cipher / PRP we would use. This allowed us to easily reuse it in our ECBC-MAC and as a PRF in our implementation of PBKDF2.
 
-# Appendix B: Feedback
+# Appendix B: Draft Feedback
 
-> "Good progress so far. I think it would be helpful to be clearer about what specific problem you're trying to solve. It might help to differentiate your approach from other similar ones, and share design rationale. I admire your efforts to do a security proof but I see some bugs: 1. if "r" is blen bits long then there is no space left for m 2. decryption doesn't check r, nor does it separate m||r 3. This cannot be CCA secure --> I can drop the last ciphertext block and the result is still a valid encryption 4. It is a little bit more involved than you claim to derive the probability of collisions in r (since you care about collisions in r, r+1, .. r+L). If you are really using passwords rather than true encryption keys, then you should give more details about how the password is converted to a key. Just saying Davies-Meyer doesn't give me enough information (that's like saying "I use CTR mode" without saying what the block cipher is), and it is probably not the ideal way to derive a key from a password anyway." 
+"Good progress so far. I think it would be helpful to be clearer about what specific problem you're trying to solve. It might help to differentiate your approach from other similar ones, and share design rationale. I admire your efforts to do a security proof but I see some bugs: 
+
+1. if "r" is blen bits long then there is no space left for m 
+2. decryption doesn't check r, nor does it separate m||r 
+3. This cannot be CCA secure --> I can drop the last ciphertext block and the result is still a valid encryption 
+4. It is a little bit more involved than you claim to derive the probability of collisions in r (since you care about collisions in r, r+1, .. r+L). If you are really using passwords rather than true encryption keys, then you should give more details about how the password is converted to a key. Just saying Davies-Meyer doesn't give me enough information (that's like saying "I use CTR mode" without saying what the block cipher is), and it is probably not the ideal way to derive a key from a password anyway." 
