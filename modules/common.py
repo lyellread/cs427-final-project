@@ -141,6 +141,10 @@ def unpad(msg: list, length=LAMBDA) -> list:
         # We can simply discard the last block of the plaintext
         msg = msg[:-1]
 
+        # handle empty array correctly
+        if len(msg) == 0:
+            msg.append(b'')
+
     else:
         # We must manipulate the bytes of the last block
         msg[-1] = msg[-1][:-padding_byte]
@@ -186,7 +190,7 @@ def encrypt(key: bytes, msg: bytes) -> bytes:
 
         ci = xor(prp(key, r), m[i])
         c.append(ci)
-        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Recombine array into a string of bytes.
     return b"".join(c)
@@ -224,7 +228,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
         # )
         mi = xor(prp(key, r), c[i])
         m.append(mi)
-        r = (int.from_bytes(r, "big") + 1 % (2 ** LAMBDA)).to_bytes(LAMBDA, byteorder="big")
+        r = (int.from_bytes(r, "big") + 1 % (2**LAMBDA)).to_bytes(LAMBDA, byteorder="big")
 
     # Remove padding from the array of blocks
     m = unpad(m, LAMBDA)
@@ -295,3 +299,38 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
         t = prp(key1, xor(t, m_i))
 
     return prp(key2, xor(t, last_block))
+
+
+def pkbdf2(passw: bytes, salt: bytes):
+    """
+    PKBDF2 is a secure way to extend a key to a key of a desired length
+    using an HMAC and padding over many iterations.
+
+    This implementation uses our existing AES/Davies-Meyer-based hash
+    over 1000 iterations and generates a 3*lambda-length output.
+
+    This is defined as follows:
+
+        for i = 1 to (desired_length / block_size):
+            T_i = F(pass, salt || i)
+            for c = 2 to iters:
+                T_i = T_i XOR F(pass, T_i)
+
+        return T_1 || T_2 ... || T_i
+    """
+
+    ITERS = 1024
+    OUT_LEN = 3 * LAMBDA
+
+    output = b""
+
+    for i in range(OUT_LEN / LAMBDA):
+        iv = salt + i.to_bytes(32, byteorder="big")
+        assert len(iv) == LAMBDA, 'Internal Error: PKBDF2 IV has incorrect length'
+        t = prp(passw, iv)
+        for c in range(1, ITERS):
+            t = xor(t, prp(passw, t))
+
+        output.append(t)
+
+    return output
