@@ -443,13 +443,6 @@ Here we can see in this function, the left and right libraries are indistinguish
 
 # Key Generation and Storage
 
-<!-- These define the functions that handle generation and storage of keyfiles used by the program. These keyfiles are generated with the function `KeyGen`, which samples a string of length `klen`. This sampling will come from the machine's built-in random device, such as `/dev/urandom`.
-
-These keyfiles are stored encrypted with a password that varies per keyfile. This "password encryption" is implemented by way of Password-Based Key Derivation Function 2 (PBKDF2). This will be expanded upon in the Primitives section.
-
-The keyfiles are also encrypted with a MAC on them. This verifies that if the keyfile was maliciously modified, that this would be detected and you would be unable to use it. Using it would cause errors to the proper encryption and decryption. Of course, using a MAC requires additional keys, and we're only using one password. This is handled by having PBKDF2 ouput a much longer "key". This can then be subdivided into several keys. More on the security properties of this are discussed later.
- -->
-
 `NOISE` features a user-accessible function for key generation ($\lib{KeyGen}$'s function$\subname{KeyGen}$, not to be confused with $\sig{KeyGen}$). This function is responsible for using a user-supplied master password to encrypt new, randomly-generated keys. `NOISE` also features a function named $\subname{GetKeys}$, which is program-internal, and is responsible for retrieving the keys from the keyfile the user has specified, decrypting them with the user's password before returning them to the program.
 
 ## Formal Scheme Definition
@@ -484,21 +477,21 @@ The $\subname{GetKeys}$ function makes use of the primitives:
         \underline{$\subname{KeyGen}()$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
         \> $s \gets \sig{GetSalt}$ \\
-        \> $k_{\text{stream-temp}} || k_{\text{mac1-temp}} || k_{\text{mac2-temp}} := \sig{PBKDF2}(p, s)$ \\
+        \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
         \> $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} \gets \sig{KeyGen}$ \\
         \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\
-        \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-temp}}, k_a) $ \\
-        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1-temp}, k_{\text{mac2-temp}}, c_k)$ \\
+        \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-pass}}, k_a) $ \\
+        \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1-pass}, k_{\text{mac2-pass}}, c_k)$ \\
         \> $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(c_k || t || s)$\\
         \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$ \\
         \\
         \underline{$\subname{GetKeys}()$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
         \> $c_k || t || s := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
-        \> $k_{\text{stream-temp}} || k_{\text{mac1-temp}} || k_{\text{mac2-temp}} := \sig{PBKDF2}(p, s)$ \\
-        \> if $\sig{CheckTag}(k_{\text{mac1-temp}}, k_{\text{mac2-temp}}, c_k, t) = \bit{false}$: \\
+        \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
+        \> if $\sig{CheckTag}(k_{\text{mac1-pass}}, k_{\text{mac2-pass}}, c_k, t) = \bit{false}$: \\
         \> \> return $\bit{err}$ \\
-        \> $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}} := \sig{Dec}_\text{CTR}(k_{\text{stream-temp}}, c_k)$ \\
+        \> $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}} := \sig{Dec}_\text{CTR}(k_{\text{stream-pass}}, c_k)$ \\
         \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
       }
     }
@@ -509,19 +502,30 @@ The $\subname{GetKeys}$ function makes use of the primitives:
 
 <!-- "Also we should just have to prove the parts of our primitives with pbkdf2 and we should be secure ig" -->
 
-### Use of keyfile hashes
+TODO: Casey Proof: 
 
-TODO: we no longer use keyfile hashes
+$\subname{KeyGen}$ makes use of two sets of three keys:
 
-The actual keyfile itself contains three keys, as described above. These three keys are concatenated together and then hashed through our Davies-Meyer function. This hash is used as a verification that a) the password is correct, and b) the keyfile is not corrupted. If either of these conditions does not hold, then the program will return an error instead of the correctly-decrypted keys. While a MAC would be ideal here, a MAC requires the use of an additional key. We are unable to do that while continuing use a password to encrypt the keyfile.
+- The user's keys: $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ 
+- The master password-based keys: $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}}$
 
-The usage (or not) of a MAC for the key storage functions is not important. It is important for the encryption and decryption of files, as those are intended to leave the computer, where eavesdroppers could corrupt and edit the files before they get to their destination. However, for the storage of keyfiles on a single computer, the risk for corruption is a lot lower, and it's not imperative that the keyfiles have MACs computed for them.
+The usage of these keys is demonstrated in detail in [Formal Scheme Definition]. The master password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master password-based keyfile encryption, we are able to also use $\sig{MAC}_{\text{ECBC}}$ on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself. 
+
+TODO: Casey, verify this is accurate. ^
 
 # Conclusion and Discussion
 
-In this report, we have methodically gone through each component of our key manager, including the encryption scheme, the Master Key generation and storage, and how we apply our encryption and decryption schemes to the KeyFile in a way that ensures that an attacker cannot gain partial knowledge of either the Master Key, the keys in the key manager, or the messages sent be `NOISE`. 
+During this project, we got the chance to design and implement our own cryptographic scheme `NOISE`, based on several common cryptographic primitives defined in [Primitives]. Our final result is a moderately-secure (insecure by modern, cutting-edge standards), functional and simple program that can encrypt streams of data using user-created and user-specified keyfiles which are stored encrypted using a user-specified Master Password.
 
-\newpage
+## Lessons Learned
+
+During the design and implementation of `NOISE`, several lessons were learned which are listed below.
+
+- Ideally, the design would be sketched out as the implementation is being designed and begun, such that any modifications to the scheme design to match constraints in implementation can be made before the documentation is finalized.
+- Implementation in modern languages like `python` is simpler and quicker than documentation. Labor should have been distributed commensurately.
+- Many `python` libraries that advertise to have methods for $\subname{AES}$ are implementations of standard Block Cipher Modes that use Block Cipher $\subname{AES}$. Therefore, finding a library that implemented just the $\subname{AES-128}$ Block Cipher was more complicated than expected.
+
+\pagebreak
 
 # Appendix A: Changelog
 
