@@ -67,6 +67,7 @@ TODO: Add Pad() and UnPad() here
       $\Seen = \bits^{128}$ \\
       \\
       $\text{blen} := 128$ \comment{\#bits} \\
+      $\text{klen} := 128$ \comment{\#bits} \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
       \> $k \gets \K$ \\
@@ -110,7 +111,17 @@ TODO: Add Pad() and UnPad() here
       \> return $t \in \T$ \\
       \\
       \underline{$\subname{CheckTag}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
-      \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$
+      \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
+      \\
+      \underline{$\subname{PBKDF2}(p, s)$:} \\
+      \> for $i = 1$ to $(3*\text{klen}/\text{blen})$: \\
+      \> \> $U_1 := \subname{F}_{AES}(p, s || i)$ \\
+      \> \> $T_i$ := $U_1$ \\
+      \> \> for $j = 2$ to $c$: \\
+      \> \> \> $U_j := \subname{F}_{AES}(p, U_{i-1}$) \\
+      \> \> \> $T_i := T_i \oplus U_j$ \\
+      \> \> $T_i := T_i$ \\
+      \> return $T$
       \\
     }
   }
@@ -122,7 +133,7 @@ TODO: Add Pad() and UnPad() here
 
 ### Block Cipher
 
-Our design utilizes a Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
+Our design utilizes an Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. 
 
 ### Block Cipher Mode
 
@@ -133,6 +144,16 @@ Our design utilizes a Block Cipher, $\sig{F}$. $\sig{F}$ is a [$\subname{AES-128
 TODO: Add description of rationale for choosing ECBC-MAC.
 
 These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
+
+### Password-Based Key Derivation Function 2 (PBKDF2)
+
+To effectively turn a password into an encryption key, `NOISE` implements $\sig{PBKDF2}$. PBKDF2 is an established Key Derivation Function. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
+
+PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), an example PRF given is an HMAC. Instead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A secure PRP is a also a secure PRF. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build PBKDF2.
+
+A few parameters are seen in the above definition. $s$ is a salt that can be an arbitrary length. $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+
+Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384 bits.
 
 \pagebreak
 
@@ -400,35 +421,6 @@ These keyfiles are stored encrypted with a password that varies per keyfile. Thi
 
 The keyfiles are also encrypted with a MAC on them. This verifies that if the keyfile was maliciously modified, that this would be detected and you would be unable to use it. Using it would cause errors to the proper encryption and decryption. Of course, using a MAC requires additional keys, and we're only using one password. This is handled by having PBKDF2 ouput a much longer "key". This can then be subdivided into several keys. More on the security properties of this are discussed later.
 
-## Password-Based Key Derivation Function 2 (PBKDF2)
-
-PBKDF2 is an established Key Derivation Function that will be doing the heavy lifting in turning a keyfile's password into a usable "master key" to decrypt it. This function repeatedly calls a PRF to generate each block of the key. After this key is generated, we will use it to decrypt the keyfile.
-
-PBKDF2 requires a pseudorandom function as part of its algorithm. In [RFC2898](https://datatracker.ietf.org/doc/html/rfc2898#appendix-B.1), an example PRF given is an HMAC. Isntead, the PRF we will be using is our AES block cipher $F_{AES}$ defined previously. A PRP is a suitable PRF (more discussion later), so it is the function we are choosing for PBKDF2
-
-A few parameters are seen below. $s$ is a salt that can be an arbitrary length (as it will be hashed down). $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our PBKDF2 output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
-
-Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a "key" of 384.
-
-\begin{center}
-  \fcodebox{
-    \codebox{
-      \> klen := 384 \\
-      \> blen := 128 \\
-      \> c := \\
-      \underline{PBKDF2(p, s):} \\
-      \> for i = 1 to (klen/blen): \\
-      \> \> $U_1 := \subname{F}_{AES}(p, s || i)$ \\
-      \> \> $T_i$ := $U_1$ \\
-      \> \> for j = 2 to c: \\
-      \> \> \> $U_j := \subname{F}_{AES}(p, U_{i-1}$) \\
-      \> \> \> $T_i := T_i \oplus U_j$ \\
-      \> \> $T_i := T_i$
-      \> return $T$
-    }
-  }
-\end{center}
-
 ## Formal Scheme Definition
 
 Our program relies on three secret keys: a key for encryption and decryption of a file, and two keys to generate a MAC for the encrypted file's contents.
@@ -508,7 +500,7 @@ The encrypted (and MAC'ed!) keys will be kept in a file, and the decrypted keys 
 
 ### Deriving keys from passwords
 
-We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. We know that $\subname{F}{AES}$ is a secure PRP, and so, a secure PRF as well. We know this because to be a secure PRP, it has to be a secure PRF first, with additional requirements. Additionally, the proving of both PRPs and PRFs are the [exact same library proof](https://joyofcryptography.com/pdf/book.pdf#theorem.464). Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build our PBKDF2.
+We use the PBKDF2 algorithm to transform a keyfile's password into a 128-bit key used to decrypt the Keyfile. PBKDF2 uses our block cipher $\subname{F}{AES}$ for its PRF calls. 
 
 TODO: rest of PBKDF2 defense
 https://www.tarsnap.com/scrypt.html
