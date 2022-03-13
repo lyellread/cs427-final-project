@@ -20,13 +20,13 @@ def prp(key: bytes, msg: bytes) -> bytes:
     """
 
     # Assert the input lengths are correct
-    assert len(key) == LAMBDA and len(msg) == LAMBDA, "Internal Error: Arguments to prp() are of incorrect lengths"
+    assert len(key) == LAMBDA and len(msg) == LAMBDA, "Internal Error: inputs to PRP have incorrect length"
 
     # Use AES as the PRP to encrypt one block of msg
     ctx = bytes(pyaes.AES(key).encrypt(list(msg)))
 
     # Check that the output length of the PRP is of block length
-    assert len(ctx) == LAMBDA, "Internal Error: Output of prp() is not of correct length."
+    assert len(ctx) == LAMBDA, "Internal Error: output of PRP has incorrect length"
 
     return ctx
 
@@ -37,8 +37,7 @@ def xor(m: bytes, k: bytes) -> bytes:
     """
 
     # Check that the arguments are the same length.
-    if len(m) != len(k):
-        raise Exception("Arguments to XOR are not the same length.")
+    assert len(m) == len(k), "Internal Error: inputs to XOR have incorrect length"
 
     return bytes(a ^ b for a, b in zip(m, k))
 
@@ -87,7 +86,7 @@ def pad(msg: list, length=LAMBDA) -> list:
 
     # print(f"[Pad] : Pre-padding msg: {msg}")
 
-    assert len(msg[-1]) <= length, "Internal Error: Invalid message provided to pad()"
+    assert len(msg[-1]) <= length, "Internal Error: input to Pad has incorrect length"
 
     # Calculate the amount that msg[-1] is under length
     padding_amount = length - len(msg[-1])
@@ -119,7 +118,7 @@ def pad(msg: list, length=LAMBDA) -> list:
 
     # Assert that our last message - be it new block or modified last block - is
     #   of length length.
-    assert len(msg[-1]) == length, "Internal Error: pad() failed to properly pad the provided message."
+    assert len(msg[-1]) == length, "Internal Error: output of Pad has incorrect length"
 
     return msg
 
@@ -213,7 +212,7 @@ def decrypt(key: bytes, ctx: bytes) -> bytes:
     """
 
     # Check that the ciphertext is valid length
-    assert len(ctx) % LAMBDA == 0, "Internal Error: Ciphertext provided to decrypt is not an even number of blocks."
+    assert len(ctx) % LAMBDA == 0, "Internal Error: input to Decrypt has incorrect size"
 
     # Parse ctx into blocks.
     c = chunk_blocks(ctx)
@@ -283,7 +282,7 @@ def mac(key1: bytes, key2: bytes, msg: bytes) -> bytes:
     # logging.debug(f"[MAC] : len mod lambda: {len(msg) % LAMBDA}")
 
     # Input should be padded already
-    assert len(msg) % LAMBDA == 0, "Internal Error: input to MAC is incorrect length"
+    assert len(msg) % LAMBDA == 0, "Internal Error: input to MAC has incorrect length"
 
     # Parse msg into blocks.
     m = chunk_blocks(msg)
@@ -326,7 +325,7 @@ def pkbdf2(passw: bytes, salt: bytes, output_length: int) -> bytes:
 
     for i in range(ceil(output_length / LAMBDA)):
         iv = hash(salt + i.to_bytes(32, byteorder="big"))
-        assert len(iv) == LAMBDA, f"Internal Error: PKBDF2 IV has incorrect length {len(iv)}, should be {LAMBDA}"
+        assert len(iv) == LAMBDA, "Internal Error: PKBDF2 IV has incorrect length"
         t = prp(passw, iv)
         for c in range(1, ITERS):
             t = xor(t, prp(passw, t))
