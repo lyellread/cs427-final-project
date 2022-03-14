@@ -6,10 +6,6 @@ As the final assessment for CS 427: Cryptography, we developed and proved the se
 
 This project is a culmination of the concepts presented throughout CS 427, notably including security standards and definitions, evaluations of cryptographic protocol weaknesses, understanding cryptographic threat models, and general ability to use and prove the security of systems built out of cryptographic building blocks.
 
-<!-- # Architecture
-
-As mentioned, `NOISE` consists of two major parts: `Stream Encryption` and `Key Generation`. Each of these parts makes use of several primitives defined in [Primitives] in order to function. These two functions rely on each other, as `Stream Encryption` requires that the `Key Generation` module decrypt and extract the relevant keys from the keyfile, while `Key Generation` makes use of `Stream Encryption`'s encryption function to secure keyfiles. Each of these parts of the program are described in their respective sections: `Stream Encryption` is defined in [Stream Encryption and Decryption] and `Key Generation` is defined in [Key Generation and Storage]. -->
-
 # Notations and Terminology
 
 Through this report, the standard notations from CS 427: Cryptography will be used. This includes symbols such as "$\gets$" ("samples uniformly from") and the hybrid proof format. In addition, the scheme $\Sigma$ will be used throughout to encapsulate several primitives that are referenced by `NOISE` constructions, accessing these subroutines will take the form $\sig{SubroutineName}$.
