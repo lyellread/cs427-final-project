@@ -131,4 +131,6 @@ $\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RF
 
 ## Hashing Function
 
-TODO: hashing function
+The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\M$, of 128 bits. 
+
+The Davies-Meyer construction was chosen over Merkle-Damg$\aa$rd construction because of the [susceptibility of the latter to length-extension attacks](https://eprint.iacr.org/2004/304.pdf). It is notable that the Davies-Meyer construction also has flaws, however these are not known to be exploitable in exponential time.
