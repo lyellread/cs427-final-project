@@ -35,7 +35,7 @@ The $\subname{GetKeys}$ function makes use of the primitives:
       \codebox{
         \underline{$\subname{KeyGen}()$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
-        \> $s \gets \S$ \\
+        \> $s \gets \Seen$ \\
         \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
         \> $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} \gets \sig{KeyGen}$ \\
         \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\
@@ -59,15 +59,29 @@ The $\subname{GetKeys}$ function makes use of the primitives:
 
 ## Security Proof and Reasoning
 
-<!-- "Also we should just have to prove the parts of our primitives with pbkdf2 and we should be secure ig" -->
+Under the following assertions, we can conclude that $\subname{KeyGen}$ is secure against chosen ciphertexts (in this case keyfiles), and the best attack against this scheme is to brute force the password. Brute-forcing the password depends on the length and complexity of the password.
 
-TODO: Casey Proof:
+### $\subname{KeyGen}$
+
+We assert that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following reasoning. 
+
+- Assertion: $\sig{PBKDF2}$ is secure given that the underlying PRF ($\sig{F}_{\text{AES-128}}$) is a secure PRF. This means that it is hard for an attacker to determine the output keys without knowledge of the user's master password.
+- Assertion: $\sig{KeyGen}$ supplies keys that are uniformly sampled from random, and are therefore unpredictable, and suitable for use as keys.
+- Assertion: $\sig{Enc}_\text{CTR}$ with $\sig{GetTag}_{\text{ECBC}}$ is a CCA secure Enc-then-MAC scheme, implying that it is also CPA secure. Therefore, this scheme is secure against adversarially chosen ciphertexts and plaintexts.
+
+### $\subname{GetKeys}$
+
+We assert that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following reasoning. 
+
+- Assertion: $\sig{PBKDF2}$ is secure given that the underlying PRF ($\sig{F}_{\text{AES-128}}$) is a secure PRF. This means that it is hard for an attacker to determine the output keys without knowledge of the user's master password.
+- Assertion: $\sig{Dec}_\text{CTR}$ with $\sig{CheckTag}_{\text{ECBC}}$ is the inverse of our CCA secure Enc-then-MAC scheme, implying that it is also CPA secure. Therefore, this scheme is secure against adversarially chosen ciphertexts and plaintexts.
+
+### Two Sets of Keys
 
 $\subname{KeyGen}$ makes use of two sets of three keys:
 
 - The user's keys: $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
 - The master password-based keys: $(k_{\text{stream-pass}}, k_{\text{mac1-pass}}, k_{\text{mac2-pass}})$
 
-The usage of these keys is demonstrated in detail in [Formal Scheme Definition]. The master password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master password-based keyfile encryption, we are able to also use $\sig{MAC}_{\text{ECBC}}$ on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
+The usage of these keys is demonstrated in detail in [Formal Scheme Definition]. The master password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
 
-TODO: Casey, verify this is accurate. ^
