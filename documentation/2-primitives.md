@@ -105,9 +105,13 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 ## Message Authentication Code
 
-TODO: Add description of rationale for choosing ECBC-MAC.
+`NOISE` uses an ECBC Message Authentication Code (MAC) ([construction 10.7 in The Joy of Cryptography](https://joyofcryptography.com/pdf/book.pdf)) in order to generate MACs for messages with a variable number of blocks. By [Theorem 10.8 in The Joy of Cryptography](https://joyofcryptography.com/pdf/book.pdf), given that our Block Cipher (Pseudo Random Permutation) $\sig{F}_{\subname{AES-128}}$ is a secure PRP, and given [Corollary 6.8 in The Joy of Cryptography](https://joyofcryptography.com/pdf/book.pdf#theorem.464), our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF, which in turn makes ECBC MAC secure.
 
-## Password-Based Key Derivation Function (PKBDF2)
+In practice, ECBC mac is used in [Key Generation and Storage] and [Stream Encryption and Decryption] in an "Enc-then-MAC" construction to derive a Chosen Ciphertext Attack (CCA) secure scheme from a Chosen Plaintext Attack (CPA) secure scheme. Pairing our [Block Cipher Mode] with ECBC MAC in this way makes the resultant Enc-then-MAC construction CCA secure.
+
+$\Sigma$ exposes two primitives related to ECBC MAC. $\sig{GetTag}_{\text{ECBC}}$ exposes a method to return the MAC for a given message made up of a round number of 128-bit blocks under the two 128-bit keys supplied. The resultant MAC (or "tag" $t$) is of length 128 bits. $\sig{CheckTag}_{\text{ECBC}}$ is exposed by $\Sigma$ to check whether a supplied 128-bit MAC is the same as the MAC for a provided message made up of a round number of 128-bit blocks, under the two 128-bit keys provided. It returns $\bit{true}$ or $\bit{false}$ depending on whether the calculated MAC matches the supplied MAC or not.
+
+## Password Based Key Derivation Function
 
 To use a user-supplied password as a cryptographic key, `NOISE` implements $\sig{PBKDF2}$. $\sig{PBKDF2}$ is a Password Based Key Derivation Function which performs a large number of operations to derive a key from a password using a Pseudo Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password.
 
