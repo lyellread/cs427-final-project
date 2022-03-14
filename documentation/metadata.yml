@@ -28,3 +28,8 @@ TODO:
   - Fix all references to reference Sigma, like \\K
   - Add footnotes for all link references
   - no () on function calls in-text
+
+BIG-TODO:
+  - Finish Security in Key Generation
+  - Write Security in Stream Enc Dec
+  - Compose section on program usage and explanation of inputs, per proposal.
