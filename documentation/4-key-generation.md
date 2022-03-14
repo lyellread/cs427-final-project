@@ -11,13 +11,13 @@ The Key Generation and Storage part of `NOISE` is fundamentally responsible for 
 
 The $\subname{KeyGen}$ function makes use of the primitives:
 
-- $\sig{PBKDF2}$: Password Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password Based Key Derivation Function].
+- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
 - $\sig{Enc}_{\text{CTR}}$: Counter (CTR) block cipher mode encryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
 - $\sig{GetTag}_{\text{ECBC}}$: ECBC MAC, described further in [Message Authentication Code] and implemented in [Primitives].
 
 The $\subname{GetKeys}$ function makes use of the primitives:
 
-- $\sig{PBKDF2}$: Password Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password Based Key Derivation Function].
+- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
 - $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
 - $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC Check, described further in [Message Authentication Code] and implemented in [Primitives].
 
