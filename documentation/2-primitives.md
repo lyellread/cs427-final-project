@@ -58,8 +58,8 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \> $t := \sig{F}_{\subname{AES-128}}(k_2, t \oplus x)$ \\
       \> return $t \in \T$ \\
       \\
-      \underline{$\subname{CheckTag}_{\text{ECBC}}($} \\
-      \> \> \underline{$k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
+      \underline{$\subname{CheckTag}_{\text{ECBC}}(k_1 \in \K, k_2 \in \K,$} \\
+      \> \hspace{6.5em} \underline{$m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
       \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
       \\
       \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Seen)$:} \\
@@ -97,7 +97,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
 
 ## Block Cipher
 
-Our design utilizes an Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\subname{AES-128}}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. This block cipher is not implemented above in the $\Sigma$ scheme, as the AES implementation is too long to include in this document.
+Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\subname{AES-128}}$ is a [$\subname{AES-128}$ block cipher](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf) with a 128-bit key. We decided to make use of an existing $\subname{AES-128}$ implementation in the [`pyaes` library](https://github.com/ricmoo/pyaes#aes-block-cipher) as implementing $\subname{AES-128}$ from scratch would have been a project in itself. While the NIST standard lays out standard implementations for $\subname{AES-192}$ and $\subname{AES-256}$ as well, we opted to use $\subname{AES-128}$ as our Block Cipher in order to keep the key size and block sizes consistent throughout `NOISE`. This decision was made with the understanding that 128-bit security is relatively low compared with new schemes offering more security, however `NOISE` aims to be readable as an educational resource about cryptographic primitives in use, therefore maximum security was not the goal. This block cipher is not implemented above in the $\Sigma$ scheme, as the AES implementation is too long to include in this document.
 
 ## Block Cipher Mode
 
@@ -107,7 +107,7 @@ Our design utilizes an Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\s
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
-## Password Based Key Derivation Function
+## Password-Based Key Derivation Function (PKBDF2)
 
 To use a user-supplied password as a cryptographic key, `NOISE` implements $\sig{PBKDF2}$. $\sig{PBKDF2}$ is a Password Based Key Derivation Function which performs a large number of operations to derive a key from a password using a Pseudo Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password.
 
