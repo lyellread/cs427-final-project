@@ -25,16 +25,16 @@ The $\subname{Dec}_{\text{Stream}}$ function makes use of the primitives:
     \titlecodebox{$\texttt{\upshape NOISE}$}{
       define $k_\text{stream}, k_\text{mac1}, k_\text{mac2} \in \Sigma.\K$ \\
       \\
-      \comment{\# Keys are read from file} \\
+      \comment{// Keys are read from file} \\
       $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{ReadKeys}$ \\
       \\
-      \comment{\# Get message from user} \\
+      \comment{// Get message from user} \\
       define $m \in \bits^*$ \\
       \\
-      \comment{\# Encrypt message} \\
+      \comment{// Encrypt message} \\
       $c := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m)$: \\
       \\
-      \comment{\# Decrypt ciphertext} \\
+      \comment{// Decrypt ciphertext} \\
       $m_1 := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c)$: \\
       \\
       assert $m = m_1$

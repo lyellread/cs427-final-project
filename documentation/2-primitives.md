@@ -15,8 +15,8 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       $\T = \bits^{128}$ \\
       $\Seen = \bits^{96}$ \\
       \\
-      $\text{blen} := 128$ \comment{\#bits} \\
-      $\text{klen} := 384$ \comment{\#bits} \\
+      $\text{blen} := 128$ \comment{// bits} \\
+      $\text{klen} := 384$ \comment{// bits} \\
       $\text{I}_{\text{pass-deriv}} := 2048$ \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
@@ -39,13 +39,13 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \> return $m_1 || \cdots || m_l \in \M$ \\
       \\
       \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
-      \> \comment{\# full AES-128 implementation} \\
-      \> \comment{\# not included due to size} \\
+      \> \comment{// full AES-128 implementation} \\
+      \> \comment{// not included due to size} \\
       \> return $c \in \C$\\
       \\
       \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
-      \> \comment{\# full AES-128 implementation} \\
-      \> \comment{\# not included due to size} \\
+      \> \comment{// full AES-128 implementation} \\
+      \> \comment{// not included due to size} \\
       \> return $m \in \M$
     }
     \qquad
@@ -80,7 +80,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \\
       \underline{$\subname{UnPad}(m \in \M^*)$:} \\
       \> $d = \subname{GetLastByte}(m)$ \\
-      \> $m := m[:-d]$ \comment{\# Remove d bytes of padding}\\
+      \> $m := m[:-d]$ \comment{// Remove d bytes of padding}\\
       \> return $m \in \bits^*$\\
       \\
       \underline{$\subname{Hash}_{\text{D-M}}(m \in \bits^*)$:} \\

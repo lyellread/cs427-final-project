@@ -24,10 +24,10 @@ The $\subname{GetKeys}$ function makes use of the primitives:
 \begin{center}
   \codebox{
     \titlecodebox{$\texttt{\upshape NOISE}$}{
-      \comment{\# Generate keys} \\
+      \comment{// Generate keys} \\
       $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$ \\
       \\
-      \comment{\# Get keys from file} \\
+      \comment{// Get keys from file} \\
       $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$
     }
     $\link$
