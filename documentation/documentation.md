@@ -153,23 +153,21 @@ Our design utilizes an Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\s
 
 ## Block Cipher Mode
 
-`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement.
+`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement. Our CTR mode encryption and decryption use a block size $\text{blen} = 128$ bits, as well as a key of length 128 bits for use in the [Block Cipher]. 
 
 ## Message Authentication Code
 
 TODO: Add description of rationale for choosing ECBC-MAC.
 
-These two functions define our MAC scheme, which is an ECBC-MAC. This relies on our AES block cipher internally, and takes two keys in its implementation.
-
 ## Password Based Key Derivation Function
 
-To use a user-supplied password as a cryptographic key, `NOISE` implements $\sig{PBKDF2}$. $\sig{PBKDF2}$ is a Password Based Key Derivation Function which performs a large number of operations to derive a key from a password using a Pseudo Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password. 
+To use a user-supplied password as a cryptographic key, `NOISE` implements $\sig{PBKDF2}$. $\sig{PBKDF2}$ is a Password Based Key Derivation Function which performs a large number of operations to derive a key from a password using a Pseudo Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password.
 
-TODO: Streamline these next 2 para's
+$\sig{PBKDF2}$ takes as input a password bit string, supplied by the user. As well, it takes in a salt $s$. Globally, the number of iterations that $\sig{PBKDF2}$ uses is defined as $\Sigma.\text{I}_{\text{pass-deriv}}$ which is set to $2048$ iterations for our implementation, which is a reasonable value given the inefficiencies of our algorithms.
 
-A few parameters are seen in the above definition. $s$ is a salt that can be an arbitrary length. $\text{blen}$ is the fixed length of our PRF output. In this scheme, our PRF spits out 128-bit output. By using the same $\subname{F}_{AES}$ for both our $\sig{PBKDF2}$ output and our encryption, we do constrict ourselves to specific input and output lengths throughout our program (namely, 128 bits). $c$ is the number of iterations that the PRF should be applied per block. This should be a very large number.
+Notably, $\sig{PBKDF2}$ takes in an arbitrary user-supplied password which cannot be used as-is in $\sig{PBKDF2}$. For this reason, this password $p$ is hashed using $\sig{Hash}_{\text{D-M}}$ which returns a fixed-length value $h$ of length 128 bits. 
 
-Lastly, $klen$ is the desired length of the key. While we are restricted to the key-lengths that our encryption algorithm can take (128 bits), we can still change this value. For our purposes of "Enc-then-MAC," we require three keys, which means we want a key of 384 bits that will be split later. A [NIST publication](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)^[*Recommendation for Key Derivation Functions Using Pseudorandom Functions*, Section 7.3] allows this usage of generating more than one key per password, as long as the keys selected from the KDF output are disjoint.
+By supplying a value of $\text{klen} = 384$ bits and a value of $\text{blen} = 128$, the key that is output by $\sig{PBKDF2}$ will be 384 bits, which becomes three keys of length 128 bits each. This permits `NOISE` to use $\sig{PBKDF2}$ to generate the three keys required ephemerally for encrypting and decrypting keyfiles (one key for the [Block Cipher Mode], two for the [Message Authentication Code]). The [NIST publication for Key Derivation Functions](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)^[*Recommendation for Key Derivation Functions Using Pseudorandom Functions*, Section 7.3] allows Key Derivation Functions to derive multiple keys per password, as long as the keys selected from the Key Derivation Function output are disjoint.
 
 ### Considerations When Choosing KDF
 
@@ -178,6 +176,10 @@ When choosing the constructions to use as the building blocks for `NOISE`, we en
 ### Pseudo Random Function for PBKDF2
 
 $\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2), $\subname{HMAC-SHA-1}$ is suggested as a PRF. Instead, we will be using is our AES Pseudo Random Permutation (PRP, described in [Block Cipher]), $\sig{F}_{\subname{AES-128}}$ defined in [Primitives]. By [Corollary 6.8 in The Joy of Cryptography](https://joyofcryptography.com/pdf/book.pdf#theorem.464), we can assert that our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF. Therefore, our $\subname{F}_{AES}$ is a secure PRF upon which we can build $\sig{PBKDF2}$.
+
+## Hashing Function
+
+TODO: hashing function
 
 \pagebreak
 
