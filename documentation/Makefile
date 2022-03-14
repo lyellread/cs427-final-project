@@ -1,9 +1,13 @@
 PANDOC_OPTS = --metadata-file metadata.yml -V geometry:margin=1in --highlight=tango
+PANDOC_DOCKER = docker run --rm -v $(shell pwd):/data -u $(shell id -u):$(shell id -g) detjensrobert/arch-pandoc
 
-all: combined
+all: docs
 
-combined: $(wildcard *.md)
+docs: $(wildcard *.md)
 	pandoc $(wildcard *.md) -o documentation.pdf $(PANDOC_OPTS)
+
+docker: $(wildcard *.md)
+	$(PANDOC_DOCKER) $(wildcard *.md) -o documentation.pdf $(PANDOC_OPTS)
 
 clean:
 	rm -f $(wildcard *.pdf)

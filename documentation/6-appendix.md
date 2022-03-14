@@ -1,4 +1,3 @@
-
 \pagebreak
 
 # Appendix A: Changelog
