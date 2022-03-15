@@ -20,3 +20,9 @@ include-before:
 
 header-includes:
   - \include{macros.tex}
+
+TODO:
+  - make sure all primitives reference correct Sigma.K, etc and not bare K
+  - assert a specific security in keygen reasoning e.g. CCA-security like as done for enc/dec
+  - reference KeyGeneration from enc/dec definition
+  - move links to textbook into footers (when they all link to the pdf with no section heading theres no reason to include a link for each one)
