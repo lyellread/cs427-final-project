@@ -15,8 +15,8 @@ linkcolor: Bittersweet
 fontsize: 11pt
 
 # add space between title & toc
-include-before:
-  - \vfill
+# include-before:
+#   - \vfill
 
 header-includes:
   - \include{macros.tex}
@@ -27,3 +27,4 @@ TODO:
   - Better heading name than Two Sets of Keys?
   - Should we add more references to the textbook when talking about the formal security definitions of schemes keygen and stream?
   - Remove Appendices?
+  - TOC on new page? 
