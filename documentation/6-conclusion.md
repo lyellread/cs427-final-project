@@ -10,4 +10,4 @@ During the design and implementation of `NOISE`, several lessons were learned wh
 
 - Ideally, the design would be sketched out as the implementation is being designed and begun, such that any modifications to the scheme design to match constraints in implementation can be made before the documentation is finalized.
 - Implementation in modern languages like `python` is simpler and quicker than documentation. Labor should have been distributed commensurately.
-- Many `python` libraries that advertise to have methods for $\subname{AES}$ are implementations of standard Block Cipher Modes that use Block Cipher $\subname{AES}$. Therefore, finding a library that implemented just the $\subname{AES-128}$ Block Cipher was more complicated than expected.
+- Many `python` libraries that advertise to have methods for AES are implementations of standard Block Cipher Modes that use Block Cipher AES. Therefore, finding a library that implemented just the AES-128 Block Cipher was more complicated than expected.

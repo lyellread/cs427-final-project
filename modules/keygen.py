@@ -15,7 +15,7 @@ def keygen(keyfile):
     ), f"Keyfile {keyfile} exists already, and would be overwritten."
 
     # Get user password input
-    password = getpass.getpass(prompt="Password: ")
+    password = getpass.getpass(prompt="Password: ").encode()
 
     # Generate a random value to use as a salt
     salt = common.get_random_bytes(common.LAMBDA - 4)
@@ -56,7 +56,7 @@ def decrypt_key(keyfile):
         exit(1)
 
     # Decrypt the encrypted key by getting password from the user
-    password = getpass.getpass(prompt="Password: ")
+    password = getpass.getpass(prompt="Password: ").encode()
 
     # Create 3 key-encryption keys from password using PKBDF2
     passw_key, passw_mac1, passw_mac2 = common.chunk_blocks(common.pkbdf2(password, salt, common.LAMBDA * 3))

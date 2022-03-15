@@ -22,14 +22,14 @@ header-includes:
   - \include{macros.tex}
 
 TODO:
-  - Fix F name throughout and subname is always used
   - Check schemes for accuracy
   - Standardize keyfile / key file
   - Fix all references to reference Sigma, like \\K
   - Add footnotes for all link references
-  - no () on function calls in-text
   - 128-bit or 128 bit.
+  - Better heading name than Two Sets of Keys?
 
 BIG-TODO:
   - Add Textbook relations to the security explanations (links)
   - Compose section on program usage and explanation of inputs, per proposal.
+  - Remove Appendices?
