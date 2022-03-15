@@ -23,4 +23,3 @@ header-includes:
 
 TODO:
   - assert a specific security in keygen reasoning e.g. CCA-security like as done for enc/dec
-  - move links to textbook into footers (when they all link to the pdf with no section heading theres no reason to include a link for each one)

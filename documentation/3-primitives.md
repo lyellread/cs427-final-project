@@ -109,15 +109,15 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 ## Message Authentication Code
 
-`NOISE` uses an ECBC Message Authentication Code (MAC) ([Construction 10.7](https://joyofcryptography.com/pdf/book.pdf)[^3.3]) in order to generate MAC tags for messages with a variable number of blocks. [Theorem 10.8](https://joyofcryptography.com/pdf/book.pdf)[^3.4] says that ECBC-MAC is a secure MAC for messages of all block-lengths, given that our Block Cipher (Pseudo Random Permutation) $\sig{F}_{\subname{AES-128}}$ is a secure PRP. Given [Corollary 6.8](https://joyofcryptography.com/pdf/book.pdf#theorem.464)[^3.5], our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF, which in turn makes ECBC-MAC a secure MAC.
+`NOISE` uses an ECBC Message Authentication Code (MAC) (Construction 10.7[^3.3]) in order to generate MAC tags for messages with a variable number of blocks. Theorem 10.8[^3.4] says that ECBC-MAC is a secure MAC for messages of all block-lengths, given that our Block Cipher (Pseudo Random Permutation) $\sig{F}_{\subname{AES-128}}$ is a secure PRP. Given Corollary 6.8[^3.5], our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF, which in turn makes ECBC-MAC a secure MAC.
 
 This ECBC-MAC is used in [Key Generation and Storage] and [Stream Encryption and Decryption] in an "Enc-then-MAC" construction to derive a Chosen Ciphertext Attack (CCA)-secure scheme from a Chosen Plaintext Attack (CPA)-secure scheme. Pairing our CPA-secure [Block Cipher Mode] with ECBC-MAC in this way makes the resultant Enc-then-MAC construction CCA secure.
 
 $\Sigma$ exposes two primitives related to ECBC-MAC. $\sig{GetTag}_{\text{ECBC}}$ exposes a method to return the MAC tag for a given message of 128-bit blocks under the two 128-bit keys supplied. The resultant tag $t$ is of length 128-bits. $\sig{CheckTag}_{\text{ECBC}}$ checks whether a supplied message and tag match by recalculating the tag internally under the two 128-bit keys provided. It returns $\bit{true}$ or $\bit{false}$ depending on whether the calculated tag matches the supplied tag.
 
-[^3.3]: Rosulek, *The Joy of Cryptography*, Chapter 10.3
-[^3.4]: Rosulek, *The Joy of Cryptography*, Chapter 10.3
-[^3.5]: Rosulek, *The Joy of Cryptography*, Chapter 6.4
+[^3.3]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10.3
+[^3.4]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10.3
+[^3.5]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 6.4
 
 ## Password-Based Key Derivation Function
 
@@ -138,10 +138,10 @@ Additionally, the iteration count chosen for $\sig{PBKDF2}$ ($\Sigma.\text{I}_{\
 
 ### Pseudo Random Function for PBKDF2
 
-$\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2)[^3.9], $\subname{HMAC-SHA-1}$ is suggested as a PRF. Instead, we will be using is our AES Pseudo-Random Permutation (PRP), described in [Block Cipher] and defined in [Primitives] as $\sig{F}_{\subname{AES-128}}$. By [Corollary 6.8](https://joyofcryptography.com/pdf/book.pdf#theorem.464)[^3.10], we can assert that our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF. Therefore, our $\sig{F}_{\subname{AES-128}}$ is a secure PRF upon which we can build $\sig{PBKDF2}$.
+$\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RFC8018](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2)[^3.9], $\subname{HMAC-SHA-1}$ is suggested as a PRF. Instead, we will be using is our AES Pseudo-Random Permutation (PRP), described in [Block Cipher] and defined in [Primitives] as $\sig{F}_{\subname{AES-128}}$. By Corollary 6.8[^3.10], we can assert that our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF. Therefore, our $\sig{F}_{\subname{AES-128}}$ is a secure PRF upon which we can build $\sig{PBKDF2}$.
 
 [^3.9]: IETF, *Password-Based Cryptography Specification Version 2.1*, Section 5.2
-[^3.10]: Rosulek, *The Joy of Cryptography*, Chapter 6.4
+[^3.10]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 6.4
 
 ## Hashing Function
 

@@ -59,10 +59,10 @@ The $\subname{Dec}_{\text{Stream}}$ function makes use of the primitives:
 
 ## Security Reasoning {#stream-reasoning}
 
-[Claim 10.10 and its associated proof](https://joyofcryptography.com/pdf/book.pdf)[^5.1] show that an Encrypt-then-MAC scheme has CCA\$-security if and only if the scheme has CPA-security and the MAC used is a secure MAC.
+Claim 10.10 and its associated proof[^5.1] show that an Encrypt-then-MAC scheme has CCA\$-security if and only if the scheme has CPA-security and the MAC used is a secure MAC.
 
-Thus, for the Encrypt-then-MAC scheme that `NOISE` implements to be CCA\$-secure, $\sig{Enc/Dec}_{\text{CTR}}$ must be CPA-secure and $\sig{Get/CheckTag}_{\text{ECBC}}$ must be a secure MAC. The CTR-mode block cipher has CPA-security, as defined in [Chapter 8](https://joyofcryptography.com/pdf/book.pdf)[^5.2]. The ECBC-MAC implemented in $\sig{Get/CheckTag}_{\text{ECBC}}$ is a secure MAC for any input as a multiple of the block length (which $\sig{Pad}$ ensures), as defined by [Theorem 10.8](https://joyofcryptography.com/pdf/book.pdf)[^5.3].
+Thus, for the Encrypt-then-MAC scheme that `NOISE` implements to be CCA\$-secure, $\sig{Enc/Dec}_{\text{CTR}}$ must be CPA-secure and $\sig{Get/CheckTag}_{\text{ECBC}}$ must be a secure MAC. The CTR-mode block cipher has CPA-security, as defined in Chapter 8[^5.2]. The ECBC-MAC implemented in $\sig{Get/CheckTag}_{\text{ECBC}}$ is a secure MAC for any input as a multiple of the block length (which $\sig{Pad}$ ensures), as defined by Theorem 10.8[^5.3].
 
-[^5.1]: Rosulek, *The Joy of Cryptography*, Chapter 10
-[^5.2]: Rosulek, *The Joy of Cryptography*, Chapter 8
-[^5.3]: Rosulek, *The Joy of Cryptography*, Chapter 10
+[^5.1]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10
+[^5.2]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 8
+[^5.3]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10
