@@ -20,8 +20,3 @@ fontsize: 11pt
 
 header-includes:
   - \include{macros.tex}
-
-TODO:
-  - Check schemes for accuracy
-  - 128-bit or 128 bit.
-  - Remove Appendices?
