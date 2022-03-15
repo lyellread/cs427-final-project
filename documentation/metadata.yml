@@ -15,8 +15,8 @@ linkcolor: Bittersweet
 fontsize: 11pt
 
 # add space between title & toc
-# include-before:
-#   - \vfill
+include-before:
+  - \vfill
 
 header-includes:
   - \include{macros.tex}
