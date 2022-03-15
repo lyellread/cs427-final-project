@@ -31,6 +31,5 @@ TODO:
   - 128-bit or 128 bit.
 
 BIG-TODO:
-  - Finish Security in Key Generation
-  - Write Security in Stream Enc Dec
+  - Add Textbook relations to the security explanations (links)
   - Compose section on program usage and explanation of inputs, per proposal.
