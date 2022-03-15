@@ -13,7 +13,7 @@ The purpose of the Stream Encryption and Decryption functions are to encrypt and
     define $k_\text{stream}, k_\text{mac1}, k_\text{mac2} \in \Sigma.\K$ \\
     \\
     \comment{// Keys are read from file} \\
-    $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{ReadKeys}$ \\
+    $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{GetKeys}$ \\
     \\
     \comment{// Get message from user} \\
     define $m \in \bits^*$ \\

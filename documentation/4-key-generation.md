@@ -2,7 +2,7 @@
 
 # Key Generation and Storage
 
-`NOISE` features a user-accessible function for key generation ($\lib{KeyGen}$'s function$\subname{KeyGen}$, not to be confused with $\sig{KeyGen}$). This function is responsible for using a user-supplied master password to encrypt new, randomly-generated keys. `NOISE` also features a function named $\subname{GetKeys}$, which is program-internal, and is responsible for retrieving the keys from the keyfile the user has specified, decrypting them with the user's password before returning them to the program.
+`NOISE` features a user-accessible function for key generation ($\lib{KeyGen}$'s function $\subname{KeyGeneration}$, not to be confused with $\sig{KeyGen}$). This function is responsible for using a user-supplied master password to encrypt new, randomly-generated keys. `NOISE` also features a function named $\subname{GetKeys}$, which is program-internal, and is responsible for retrieving the keys from the keyfile the user has specified, decrypting them with the user's password before returning them to the program.
 
 ## Formal Scheme Definition
 
@@ -12,10 +12,10 @@ The Key Generation and Storage part of `NOISE` is fundamentally responsible for 
   \codebox{
     \titlecodebox{$\texttt{\upshape NOISE}$}{
       \comment{// Generate keys} \\
-      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$ \\
+      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGeneration}()$ \\
       \\
       \comment{// Get keys from file} \\
-      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGen}()$
+      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{GetKeys}()$
     }
     $\link$
     \titlecodebox{\lib{KeyGen}}{
@@ -65,7 +65,7 @@ $\subname{KeyGeneration}$ makes use of two sets of three keys:
 
 The usage of these keys is demonstrated in detail in the implementation of library $\lib{KeyGen}$, in [Formal Scheme Definition]. The master-password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master-password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
 
-We find it reasonable to conclude that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following assertions about its component parts.
+We find it reasonable to conclude that $\lib{KeyGen}$'s $\subname{KeyGeneration}$ is secure, based on the following assertions about its component parts.
 
 - Assertion: $\sig{PBKDF2}$ is secure given that the underlying PRF ($\sig{F}_{\text{AES-128}}$) is a secure PRF. This means that it is hard for an attacker to determine the output keys without knowledge of the user's master password. This assertion is made with the understanding that the function of $\sig{PBKDF2}$ is twofold: deriving a key from a password, as well as increasing the difficulty of guessing passwords in a brute force manner. These two functions are justified to be secure in this implementation as follows:
   1. The derivation of multiple keys based on a single master password using $\sig{PBKDF2}$ has been shown to be a secure, valid use-case for PBKDF2 as described in NIST SP 800-108, which details: *"any segment of the derived keying material having the required length can be specified for use as a key, subject to the following restriction: When multiple keys [...] are obtained from the derived keying material, they shall be selected from disjoint (i.e., non-overlapping) segments of the KDF output."*[^4.1] This indicates that $\sig{PBKDF2}$ may be used to derive three keys from a single password, as long as these keys are not overlapping *"segments of the KDF output"*.

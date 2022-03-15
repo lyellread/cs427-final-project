@@ -20,75 +20,76 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       $\text{I}_{\text{pass-deriv}} := 2048$ \\
       \\
       \underline{$\subname{KeyGen}()$:}\\
-      \> $k \gets \K$ \\
-      \> return $k \in \K$ \\
+      \> $k \gets \Sigma.\K$ \\
+      \> return $k \in \Sigma.\K$ \\
       \\
-      \underline{$\subname{Enc}_{\text{CTR}}(k \in \K, m_1 || \cdots || m_l \in \M)$:} \\
-      \> $r \gets \bits^{\text{blen}}$ \\
+      \underline{$\subname{Enc}_{\text{CTR}}(k \in \Sigma.\K, m_1 || \cdots || m_l \in \Sigma.\M)$:} \\
+      \> $r \gets \bits^{\Sigma.\text{blen}}$ \\
       \> $c_0 := r$ \\
       \> for $i = 1$ to $l$: \\
       \> \> $c_i := \sig{F}_{\subname{AES-128}}(k, r) \oplus m_i$ \\
-      \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
-      \> return $c_0 || \cdots || c_l \in \C$\\
+      \> \> $r := r + 1 \text{ mod } 2^{\Sigma.\text{blen}}$ \\
+      \> return $c_0 || \cdots || c_l \in \Sigma.\C$\\
       \\
-      \underline{$\subname{Dec}_{\text{CTR}}(k \in \K, c_0 || \cdots || c_l \in \C)$:} \\
+      \underline{$\subname{Dec}_{\text{CTR}}(k \in \Sigma.\K, c_0 || \cdots || c_l \in \Sigma.\C)$:} \\
       \> $r := c_0$ \\
       \> for $i = 1$ to $l$: \\
       \> \> $m_i := \sig{F}_{\subname{AES-128}}(k, r) \oplus c_i$\\
-      \> \> $r := r + 1 \text{ mod } 2^{\text{blen}}$ \\
-      \> return $m_1 || \cdots || m_l \in \M$ \\
+      \> \> $r := r + 1 \text{ mod } 2^{\Sigma.\text{blen}}$ \\
+      \> return $m_1 || \cdots || m_l \in \Sigma.\M$ \\
       \\
-      \underline{$\subname{F}_{\subname{AES-128}}(k \in \K, m \in \M)$:} \\
+      \underline{$\subname{F}_{\subname{AES-128}}(k \in \Sigma.\K, m \in \Sigma.\M)$:} \\
       \> \comment{// AES-128 implementation} \\
       \> \comment{// via pyaes omitted for size} \\
-      \> return $c \in \C$\\
+      \> return $c \in \Sigma.\C$\\
       \\
-      \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \K, c \in \C)$:} \\
+      \underline{$\subname{F}_{\subname{AES-128}}^{-1}(k \in \Sigma.\K, c \in \Sigma.\C)$:} \\
       \> \comment{// AES-128 implementation} \\
       \> \comment{// via pyaes omitted for size} \\
-      \> return $m \in \M$
+      \> return $m \in \Sigma.\M$
     }
     \qquad
     \codebox{
-      \underline{$\subname{GetTag}_{\text{ECBC}}(k_1 \in \K, k_2 \in \K, m_0 || \cdots || m_l \in \M)$:} \\
+       \underline{$\subname{GetTag}_{\text{ECBC}}(k_1 \in \Sigma.\K, k_2 \in \Sigma.\K,$} \\
+      \> \hspace{5.3em} \underline{$m_0 || \cdots || m_l \in \Sigma.\M)$:} \\
       \> $x := m_l$ \\
-      \> $t := \bit{0}^{\text{blen}}$ \\
+      \> $t := \bit{0}^{\Sigma.\text{blen}}$ \\
       \> for $i=0$ to $i = l-1$: \\
       \> \> $t := \sig{F}_{\subname{AES-128}}(k_1, t \oplus m_i)$ \\
       \> $t := \sig{F}_{\subname{AES-128}}(k_2, t \oplus x)$ \\
-      \> return $t \in \T$ \\
+      \> return $t \in \Sigma.\T$ \\
       \\
-      \underline{$\subname{CheckTag}_{\text{ECBC}}(k_1 \in \K, k_2 \in \K,$} \\
-      \> \hspace{6.5em} \underline{$m_0 || \cdots || m_l \in \M, t \in \T)$:} \\
+      \underline{$\subname{CheckTag}_{\text{ECBC}}(k_1 \in \Sigma.\K, k_2 \in \Sigma.\K,$} \\
+      \> \hspace{6.5em} \underline{$m_0 || \cdots || m_l \in \Sigma.\M, t \in \Sigma.\T)$:} \\
       \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
       \\
-      \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Seen)$:} \\
+      \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Sigma.\Seen)$:} \\
       \> $p := \sig{Hash}_{\text{D-M}}(p)$ \\
-      \> for $i = 1$ to $\frac{\text{klen}}{\text{blen}}$: \\
+      \> for $i = 1$ to $\frac{\Sigma.\text{klen}}{\Sigma.\text{blen}}$: \\
       \> \> $u_1 := \sig{F}_{\subname{AES-128}}(p, s || i)$ \\
       \> \> $t_i := u_1$ \\
       \> \> for $j = 2$ to $\Sigma.\text{I}_{\text{pass-deriv}}$: \\
       \> \> \> $u_j := \sig{F}_{\subname{AES-128}}(p, u_{i-1}$) \\
       \> \> \> $t_i := t_i \oplus u_j$ \\
-      \> $t := t_1 || \cdots || t_{\frac{\text{klen}}{\text{blen}}}$ \\
-      \> return $t \in \bits^\text{klen}$ \\
+      \> $t := t_1 || \cdots || t_{\frac{\Sigma.\text{klen}}{\Sigma.\text{blen}}}$ \\
+      \> return $t \in \bits^{\Sigma.\text{klen}}$ \\
       \\
       \underline{$\subname{Pad}(m \in \bits^*)$:} \\
-      \> $d = [\text{blen}-(\subname{BitLength}(m) \text{ mod blen})]/8$ \\
+      \> $d = [\Sigma.\text{blen}-(\subname{BitLength}(m) \text{ mod } \Sigma.\text{blen})]/8$ \\
       \> $m := m || [\bit{0x00}_0 || \cdots || \bit{0x00}_{(d-1)} || \subname{HexByte}(\text{d})]$ \\
-      \> return $m \in \M^*$ \\
+      \> return $m \in \Sigma.\M^*$ \\
       \\
-      \underline{$\subname{UnPad}(m \in \M^*)$:} \\
+      \underline{$\subname{UnPad}(m \in \Sigma.\M^*)$:} \\
       \> $d = \subname{GetLastByte}(m)$ \\
       \> $m := m[:-d]$ \comment{// Remove d bytes of padding}\\
       \> return $m \in \bits^*$\\
       \\
       \underline{$\subname{Hash}_{\text{D-M}}(m \in \bits^*)$:} \\
-      \> $h := \bit{0}^{\text{blen}}$ \\
+      \> $h := \bit{0}^{\Sigma.\text{blen}}$ \\
       \> $m_0 || \cdots || m_l := \sig{Pad}(m)$ \\
       \> for $i=0$ to $l$: \\
       \> \> $h := \sig{F}_{\subname{AES-128}}(m_i, h) \oplus h$ \\
-      \> return $h \in \M$
+      \> return $h \in \Sigma.\M$
     }
   }
 \end{center}
@@ -104,7 +105,7 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 ## Block Cipher Mode
 
-`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement. Our CTR mode encryption and decryption use a block size $\text{blen} = 128$-bits, as well as a key of length 128-bits for use in the [Block Cipher].
+`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement. Our CTR mode encryption and decryption use a block size $\Sigma.\text{blen} = 128$-bits, as well as a key of length 128-bits for use in the [Block Cipher].
 
 ## Message Authentication Code
 
@@ -124,7 +125,7 @@ To use a user-supplied password as a cryptographic key, `NOISE` implements the [
 
 $\sig{PBKDF2}$ takes as input a user-supplied password $p$ and a salt $s$. Globally, the number of iterations that $\sig{PBKDF2}$ uses is defined as $\Sigma.\text{I}_{\text{pass-deriv}}$, set to $2048$ iterations for our implementation. Notably, $\sig{PBKDF2}$ takes in a user-supplied password of arbitrary length which cannot be used as-is in $\sig{PBKDF2}$. This password needs to be compressed to a single block to be used in our PRF $\sig{F}_{\subname{AES-128}}$. For this reason, this password $p$ is hashed using $\sig{Hash}_{\text{D-M}}$ which returns a fixed-length value $h$ of length 128-bits.
 
-By supplying a value of $\text{klen} = 384$-bits and a value of $\text{blen} = 128$, the key that is output by $\sig{PBKDF2}$ will be 384-bits, which becomes three keys of length 128-bits each. This permits `NOISE` to use $\sig{PBKDF2}$ to generate the three keys required ephemerally for encrypting and decrypting keyfiles (one key for the [Block Cipher Mode], two for the [Message Authentication Code]). The [NIST publication covering Key Derivation Functions](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)[^3.7] allows Key Derivation Functions to derive multiple keys per password, as long as the keys selected from the Key Derivation Function output are disjoint.
+By supplying a value of $\Sigma.\text{klen} = 384$-bits and a value of $\Sigma.\text{blen} = 128$, the key that is output by $\sig{PBKDF2}$ will be 384-bits, which becomes three keys of length 128-bits each. This permits `NOISE` to use $\sig{PBKDF2}$ to generate the three keys required ephemerally for encrypting and decrypting keyfiles (one key for the [Block Cipher Mode], two for the [Message Authentication Code]). The [NIST publication covering Key Derivation Functions](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)[^3.7] allows Key Derivation Functions to derive multiple keys per password, as long as the keys selected from the Key Derivation Function output are disjoint.
 
 [^3.6]: IETF, *Password-Based Cryptography Specification Version 2.1*, Section 5.2
 [^3.7]: NIST, *NIST Special Publication 800-108: Recommendation for Key Derivation Functions Using Pseudorandom Functions*, Section 7.3
@@ -144,7 +145,7 @@ $\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RF
 
 ## Hashing Function
 
-The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\M$, of 128-bits.
+The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\Sigma.\M$, of 128-bits.
 
 The Davies-Meyer construction was chosen over Merkle-Damg$\aa$rd construction because of the [susceptibility of the latter to length-extension attacks](https://eprint.iacr.org/2004/304.pdf)[^3.11]. It is notable that the Davies-Meyer construction also has flaws, however these are not known to be exploitable in exponential time.
 
