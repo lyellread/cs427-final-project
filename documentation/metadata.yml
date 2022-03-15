@@ -23,10 +23,7 @@ header-includes:
 
 TODO:
   - Check schemes for accuracy
-  - Add footnotes for all link references
   - 128-bit or 128 bit.
   - Better heading name than Two Sets of Keys?
-
-BIG-TODO:
-  - Add Textbook relations to the security explanations (links)
+  - Should we add more references to the textbook when talking about the formal security definitions of schemes keygen and stream?
   - Remove Appendices?
