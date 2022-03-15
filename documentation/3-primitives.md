@@ -104,7 +104,7 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 ## Block Cipher Mode
 
-`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement. Our CTR mode encryption and decryption use a block size $\text{blen} = 128$ bits, as well as a key of length 128 bits for use in the [Block Cipher].
+`NOISE` makes use of $\sig{Enc}_{\text{CTR}}$ and $\sig{Dec}_{\text{CTR}}$ subroutines to encrypt and decrypt data. We opted to use Counter (CTR) block cipher mode for this purpose as it provides CPA security and is simple to implement. Our CTR mode encryption and decryption use a block size $\text{blen} = 128$-bits, as well as a key of length 128-bits for use in the [Block Cipher].
 
 ## Message Authentication Code
 
@@ -112,7 +112,7 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 This ECBC-MAC is used in [Key Generation and Storage] and [Stream Encryption and Decryption] in an "Enc-then-MAC" construction to derive a Chosen Ciphertext Attack (CCA)-secure scheme from a Chosen Plaintext Attack (CPA)-secure scheme. Pairing our CPA-secure [Block Cipher Mode] with ECBC-MAC in this way makes the resultant Enc-then-MAC construction CCA secure.
 
-$\Sigma$ exposes two primitives related to ECBC-MAC. $\sig{GetTag}_{\text{ECBC}}$ exposes a method to return the MAC tag for a given message of 128-bit blocks under the two 128-bit keys supplied. The resultant tag $t$ is of length 128 bits. $\sig{CheckTag}_{\text{ECBC}}$ checks whether a supplied message and tag match by recalculating the tag internally under the two 128-bit keys provided. It returns $\bit{true}$ or $\bit{false}$ depending on whether the calculated tag matches the supplied tag.
+$\Sigma$ exposes two primitives related to ECBC-MAC. $\sig{GetTag}_{\text{ECBC}}$ exposes a method to return the MAC tag for a given message of 128-bit blocks under the two 128-bit keys supplied. The resultant tag $t$ is of length 128-bits. $\sig{CheckTag}_{\text{ECBC}}$ checks whether a supplied message and tag match by recalculating the tag internally under the two 128-bit keys provided. It returns $\bit{true}$ or $\bit{false}$ depending on whether the calculated tag matches the supplied tag.
 
 [^3.3]: Rosulek, *The Joy of Cryptography*, Chapter 10.3
 [^3.4]: Rosulek, *The Joy of Cryptography*, Chapter 10.3
@@ -122,9 +122,9 @@ $\Sigma$ exposes two primitives related to ECBC-MAC. $\sig{GetTag}_{\text{ECBC}}
 
 To use a user-supplied password as a cryptographic key, `NOISE` implements the [PKBDF2 key-derivation algorithm](https://datatracker.ietf.org/doc/html/rfc8018#section-5.2)[^3.6] as $\sig{PBKDF2}$. PKBDF2 is a password-based key derivation function which performs a large number of operations to derive an arbitrary-length key from a password using a Pseudo-Random Function (PRF). The output of this deterministic process is a key that has been derived based on the provided password but is indistinguishable from a random sample.
 
-$\sig{PBKDF2}$ takes as input a user-supplied password $p$ and a salt $s$. Globally, the number of iterations that $\sig{PBKDF2}$ uses is defined as $\Sigma.\text{I}_{\text{pass-deriv}}$, set to $2048$ iterations for our implementation. Notably, $\sig{PBKDF2}$ takes in a user-supplied password of arbitrary length which cannot be used as-is in $\sig{PBKDF2}$. This password needs to be compressed to a single block to be used in our PRF $\sig{F}_{\subname{AES-128}}$. For this reason, this password $p$ is hashed using $\sig{Hash}_{\text{D-M}}$ which returns a fixed-length value $h$ of length 128 bits.
+$\sig{PBKDF2}$ takes as input a user-supplied password $p$ and a salt $s$. Globally, the number of iterations that $\sig{PBKDF2}$ uses is defined as $\Sigma.\text{I}_{\text{pass-deriv}}$, set to $2048$ iterations for our implementation. Notably, $\sig{PBKDF2}$ takes in a user-supplied password of arbitrary length which cannot be used as-is in $\sig{PBKDF2}$. This password needs to be compressed to a single block to be used in our PRF $\sig{F}_{\subname{AES-128}}$. For this reason, this password $p$ is hashed using $\sig{Hash}_{\text{D-M}}$ which returns a fixed-length value $h$ of length 128-bits.
 
-By supplying a value of $\text{klen} = 384$ bits and a value of $\text{blen} = 128$, the key that is output by $\sig{PBKDF2}$ will be 384 bits, which becomes three keys of length 128 bits each. This permits `NOISE` to use $\sig{PBKDF2}$ to generate the three keys required ephemerally for encrypting and decrypting keyfiles (one key for the [Block Cipher Mode], two for the [Message Authentication Code]). The [NIST publication covering Key Derivation Functions](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)[^3.7] allows Key Derivation Functions to derive multiple keys per password, as long as the keys selected from the Key Derivation Function output are disjoint.
+By supplying a value of $\text{klen} = 384$-bits and a value of $\text{blen} = 128$, the key that is output by $\sig{PBKDF2}$ will be 384-bits, which becomes three keys of length 128-bits each. This permits `NOISE` to use $\sig{PBKDF2}$ to generate the three keys required ephemerally for encrypting and decrypting keyfiles (one key for the [Block Cipher Mode], two for the [Message Authentication Code]). The [NIST publication covering Key Derivation Functions](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf)[^3.7] allows Key Derivation Functions to derive multiple keys per password, as long as the keys selected from the Key Derivation Function output are disjoint.
 
 [^3.6]: IETF, *Password-Based Cryptography Specification Version 2.1*, Section 5.2
 [^3.7]: NIST, *NIST Special Publication 800-108: Recommendation for Key Derivation Functions Using Pseudorandom Functions*, Section 7.3
@@ -144,7 +144,7 @@ $\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RF
 
 ## Hashing Function
 
-The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\M$, of 128 bits.
+The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\M$, of 128-bits.
 
 The Davies-Meyer construction was chosen over Merkle-Damg$\aa$rd construction because of the [susceptibility of the latter to length-extension attacks](https://eprint.iacr.org/2004/304.pdf)[^3.11]. It is notable that the Davies-Meyer construction also has flaws, however these are not known to be exploitable in exponential time.
 
