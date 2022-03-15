@@ -24,7 +24,5 @@ header-includes:
 TODO:
   - Check schemes for accuracy
   - 128-bit or 128 bit.
-  - Better heading name than Two Sets of Keys?
-  - Should we add more references to the textbook when talking about the formal security definitions of schemes keygen and stream?
   - Remove Appendices?
   - TOC on new page? 

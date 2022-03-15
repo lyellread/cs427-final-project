@@ -57,7 +57,7 @@ The $\subname{Dec}_{\text{Stream}}$ function makes use of the primitives:
 - $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
 - $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC check, described further in [Message Authentication Code] and implemented in [Primitives].
 
-## Security Proof and Reasoning
+## Security Reasoning {#stream-reasoning}
 
 [Claim 10.10 and its associated proof](https://joyofcryptography.com/pdf/book.pdf)[^4.1] show that an Encrypt-then-MAC scheme has CCA\$-security if and only if the scheme has CPA-security and the MAC used is a secure MAC.
 
