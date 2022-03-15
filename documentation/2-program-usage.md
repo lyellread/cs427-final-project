@@ -34,10 +34,10 @@ By invoking the program as follows, a user can access the command-line documenta
 
 ## `keygen`
 
-`NOISE`'s `keygen` functionality permits the user to create a keyfile, encrypted with their master password. To invoke this subroutine, call the program with:
+`NOISE`'s `keygen` functionality permits the user to create a keyfile, encrypted with their master password. The user can either supply a path to where the keyfile should be created, or leave the argument blank (or enter `-`) to redirect the keyfile contents to `stdout` To invoke this subroutine, call the program with:
 
 ```sh
-./noise.py keygen
+./noise.py keygen <path_to_keyfile>
 ```
 
 Optionally, a user can supply the verbose flag `-v` (or `--verbose`) to get details on the program's functioning and debug issues with the program.
