@@ -7,19 +7,7 @@
 
 ## Formal Scheme Definition
 
-The Key Generation and Storage part of `NOISE` is fundamentally responsible for properly creating, storing and retrieving cryptographic keys.
-
-The $\subname{KeyGen}$ function makes use of the primitives:
-
-- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
-- $\sig{Enc}_{\text{CTR}}$: Counter (CTR) block cipher mode encryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
-- $\sig{GetTag}_{\text{ECBC}}$: ECBC MAC, described further in [Message Authentication Code] and implemented in [Primitives].
-
-The $\subname{GetKeys}$ function makes use of the primitives:
-
-- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
-- $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
-- $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC Check, described further in [Message Authentication Code] and implemented in [Primitives].
+The Key Generation and Storage part of `NOISE` is fundamentally responsible for properly creating, storing and retrieving cryptographic keys. Formally, the key generation and storage scheme is specified as follows:
 
 \begin{center}
   \codebox{
@@ -57,13 +45,34 @@ The $\subname{GetKeys}$ function makes use of the primitives:
   }
 \end{center}
 
+The $\subname{KeyGen}$ function makes use of the primitives:
+
+- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
+- $\sig{Enc}_{\text{CTR}}$: Counter (CTR) block cipher mode encryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{GetTag}_{\text{ECBC}}$: ECBC MAC, described further in [Message Authentication Code] and implemented in [Primitives].
+
+The $\subname{GetKeys}$ function makes use of the primitives:
+
+- $\sig{PBKDF2}$: Password-Based Key Derivation Function which uses several operations to derive keys from password values. This ensures that the computational requirements of brute forcing the password are more significant than simply hashing the master password. This function is implemented in [Primitives] and described further in [Password-Based Key Derivation Function].
+- $\sig{Dec}_{\text{CTR}}$: Counter (CTR) block cipher mode decryption with 128-bit key and 128-bit block cipher $\sig{F}_{\subname{AES-128}}$. This block cipher mode is implemented in [Primitives] and described in more depth in [Block Cipher Mode]. The choice to use AES-128 as our Block Cipher is discussed in [Block Cipher].
+- $\sig{CheckTag}_{\text{ECBC}}$: ECBC MAC Check, described further in [Message Authentication Code] and implemented in [Primitives].
+
 ## Security Proof and Reasoning
 
-Under the following assertions, we can conclude that $\subname{KeyGen}$ is secure against chosen ciphertexts (in this case keyfiles), and the best attack against this scheme is to brute force the password. Brute-forcing the password depends on the length and complexity of the password.
+Under the following assertions, we can conclude that $\lib{KeyGen}$'s functions $\subname{KeyGen}$ and $\subname{GetKeys}$ are secure against chosen ciphertexts (in this case keyfiles). Additionally, we conclude that the best attack against this scheme is to brute force the master password. Brute-forcing the password depends on the length and complexity of the password, however it is significantly hindered by the use of $\sig{PBKDF2}$ which exponentially raises the computational cost associated with brute forcing the master password. Another brute-force approach that an attacker might apply is to brute force the three 128-bit keys that encrypt and tag the stored keyfile at rest. Doing this requires brute forcing 384 bits of security.
+
+### Two Sets of Keys
+
+$\subname{KeyGen}$ makes use of two sets of three keys:
+
+- The user's keys: $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
+- The master-password-based keys: $(k_{\text{stream-pass}}, k_{\text{mac1-pass}}, k_{\text{mac2-pass}})$
+
+The usage of these keys is demonstrated in detail in the implementation of library $\lib{KeyGen}$, in [Formal Scheme Definition]. The master-password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master-password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
 
 ### $\subname{KeyGen}$
 
-We assert that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following reasoning. 
+We find it reasonable to conclude that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following assertions about it's component parts. 
 
 - Assertion: $\sig{PBKDF2}$ is secure given that the underlying PRF ($\sig{F}_{\text{AES-128}}$) is a secure PRF. This means that it is hard for an attacker to determine the output keys without knowledge of the user's master password.
 - Assertion: $\sig{KeyGen}$ supplies keys that are uniformly sampled from random, and are therefore unpredictable, and suitable for use as keys.
@@ -71,17 +80,9 @@ We assert that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the follo
 
 ### $\subname{GetKeys}$
 
-We assert that $\lib{KeyGen}$'s $\subname{KeyGen}$ is secure, based on the following reasoning. 
+We find it reasonable to conclude that $\lib{KeyGen}$'s $\subname{GetKeys}$ is secure, based on the following assertions about it's component parts. 
 
 - Assertion: $\sig{PBKDF2}$ is secure given that the underlying PRF ($\sig{F}_{\text{AES-128}}$) is a secure PRF. This means that it is hard for an attacker to determine the output keys without knowledge of the user's master password.
 - Assertion: $\sig{Dec}_\text{CTR}$ with $\sig{CheckTag}_{\text{ECBC}}$ is the inverse of our CCA secure Enc-then-MAC scheme, implying that it is also CPA secure. Therefore, this scheme is secure against adversarially chosen ciphertexts and plaintexts.
 
-### Two Sets of Keys
-
-$\subname{KeyGen}$ makes use of two sets of three keys:
-
-- The user's keys: $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
-- The master password-based keys: $(k_{\text{stream-pass}}, k_{\text{mac1-pass}}, k_{\text{mac2-pass}})$
-
-The usage of these keys is demonstrated in detail in [Formal Scheme Definition]. The master password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
 
