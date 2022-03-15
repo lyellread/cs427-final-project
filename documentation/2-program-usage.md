@@ -2,13 +2,13 @@
 
 # Program Usage
 
-```
+```docopt
 noise - Nice 'Ol Interactive Stream Encryption
 
 Usage:
     noise keygen [-v] [KEYFILE]
-    noise encrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
-    noise decrypt --key=<keyfile> [-v] [INFILE] [OUTFILE]
+    noise encrypt --key=KEYFILE [-v] [INFILE] [OUTFILE]
+    noise decrypt --key=KEYFILE [-v] [INFILE] [OUTFILE]
     noise --test [-v]
 
 Options:
@@ -21,12 +21,11 @@ Options:
     -k --key KEYFILE    Key to use when encrypting or decrypting a file.
 
     With no FILEs specified, or when FILEs are -, use stdin/stdout.
-
 ```
 
 ## Help Menu
 
-By invoking the program as follows, a user can access the command-line documentation for `NOISE`:
+By invoking the program as follows, a user can access the command-line documentation for `NOISE` as shown above:
 
 ```sh
 ./noise.py --help
@@ -34,7 +33,7 @@ By invoking the program as follows, a user can access the command-line documenta
 
 ## `keygen`
 
-`NOISE`'s `keygen` functionality permits the user to create a keyfile, encrypted with their master password. The user can either supply a path to where the keyfile should be created, or leave the argument blank (or enter `-`) to redirect the keyfile contents to `stdout` To invoke this subroutine, call the program with:
+`NOISE`'s `keygen` functionality permits the user to create a keyfile, encrypted with their master password. The user can either supply a path to where the keyfile should be created, or leave the argument blank (or enter `-`) to redirect the keyfile contents to `stdout`. To invoke this subroutine, call the program with:
 
 ```sh
 ./noise.py keygen <path_to_keyfile>
