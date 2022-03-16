@@ -109,7 +109,7 @@ Our design utilizes a Block Cipher, $\sig{F}_{\subname{AES-128}}$. $\sig{F}_{\su
 
 ## Message Authentication Code
 
-`NOISE` uses an ECBC Message Authentication Code (MAC) (Construction 10.7[^3.3]) in order to generate MAC tags for messages with a variable number of blocks. Theorem 10.8[^3.4] says that ECBC-MAC is a secure MAC for messages of all block-lengths, given that our Block Cipher (Pseudo Random Permutation) $\sig{F}_{\subname{AES-128}}$ is a secure PRP. Given Corollary 6.8[^3.5], our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF, which in turn makes ECBC-MAC a secure MAC.
+`NOISE` uses an ECBC Message Authentication Code (MAC) (Construction 10.7[^3.3]) in order to generate MAC tags for messages with a variable number of blocks. Theorem 10.8[^3.4] says that ECBC-MAC is a secure MAC for messages of all block-lengths, given that the PRF used ($\sig{F}_{\subname{AES-128}}$) is a secure PRF. Given Corollary 6.8[^3.5], our PRP $\sig{F}_{\subname{AES-128}}$ is a also a secure PRF, therefore ECBC-MAC implemented with $\sig{F}_{\subname{AES-128}}$ is a secure MAC.
 
 This ECBC-MAC is used in [Key Generation and Storage] and [Stream Encryption and Decryption] in an "Enc-then-MAC" construction to derive a Chosen Ciphertext Attack (CCA)-secure scheme from a Chosen Plaintext Attack (CPA)-secure scheme. Pairing our CPA-secure [Block Cipher Mode] with ECBC-MAC in this way makes the resultant Enc-then-MAC construction CCA secure.
 
@@ -118,6 +118,14 @@ $\Sigma$ exposes two primitives related to ECBC-MAC. $\sig{GetTag}_{\text{ECBC}}
 [^3.3]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10.3
 [^3.4]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 10.3
 [^3.5]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 6.4
+
+## Hashing Function
+
+The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\Sigma.\M$, of 128-bits.
+
+The Davies-Meyer construction was chosen over Merkle-Damg$\aa$rd construction because of the [susceptibility of the latter to length-extension attacks](https://eprint.iacr.org/2004/304.pdf)[^3.11]. It is notable that the Davies-Meyer construction also has flaws, however these are not known to be exploitable in exponential time.
+
+[^3.11]: Kelsey, Schneier, *Second Preimages on n-bit Hash Functions for Much Less than $2^n$ Work*
 
 ## Password-Based Key Derivation Function
 
@@ -142,11 +150,3 @@ $\sig{PBKDF2}$ requires a pseudorandom function as part of its algorithm. In [RF
 
 [^3.9]: IETF, *Password-Based Cryptography Specification Version 2.1*, Section 5.2
 [^3.10]: Rosulek, [*The Joy of Cryptography*](https://joyofcryptography.com/pdf/book.pdf), Chapter 6.4
-
-## Hashing Function
-
-The hashing construction used in `NOISE` is a Davies-Meyer compression function design. The choice was made to use the Davies-Meyer construction as it makes use of a secure [Block Cipher], which we have already defined to be $\sig{F}_{\subname{AES-128}}$. The hashing subroutine $\sig{Hash}_{\text{D-M}}$ takes in a message of any length, and outputs a message in $\Sigma.\M$, of 128-bits.
-
-The Davies-Meyer construction was chosen over Merkle-Damg$\aa$rd construction because of the [susceptibility of the latter to length-extension attacks](https://eprint.iacr.org/2004/304.pdf)[^3.11]. It is notable that the Davies-Meyer construction also has flaws, however these are not known to be exploitable in exponential time.
-
-[^3.11]: Kelsey, Schneier, *Second Preimages on n-bit Hash Functions for Much Less than $2^n$ Work*
