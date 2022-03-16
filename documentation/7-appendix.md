@@ -8,7 +8,7 @@ We submitted an initial draft for feedback. Our original design was a modified C
 
 To improve from this feedback, we made a variety of changes. Firstly, we returned to normal CTR mode and included a MAC, creating a CCA-secure "Enc-then-MAC" scheme. The MAC we chose for this purpose was ECBC-MAC to allow tagging of arbitrary-length messages. Next, we did further research on how to properly generate keys from a password. We chose to implement one of these methods, PBKDF2. This is a more sophisticated and secure method of generating password-derived keys compared to our previous $k := \sig{Hash}(password)$.
 
-One thing that we got right in the initial design was to choose AES as the block cipher / PRP we would use. By choosing this known-secure (or rather, known-not-insecure) algorithm as our PRP/PRF, this allowed us to construct provably-secure constructions using AES, such as our ECBC-MAC and PBKDF2.
+One thing that we got right in the initial design was to choose AES as the block cipher / PRP we would use. By choosing this known-secure (or rather, known-not-insecure) algorithm as our PRP/PRF, this allowed us to construct secure constructions using AES, such as our ECBC-MAC and PBKDF2.
 
 ## Appendix B: Draft Feedback
 

@@ -2,7 +2,7 @@
 
 # Stream Encryption and Decryption
 
-`NOISE` features constructions to permit the user in encrypting and decrypting streams of data to and from files of their choice using a specified key. This scheme is described in this section.
+`NOISE` features constructions to permit the user to encrypt and decrypt streams of data to and from files of their choice using a specified key. This scheme is described in this section.
 
 ## Formal Scheme Definition
 
