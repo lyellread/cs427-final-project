@@ -1,5 +1,5 @@
 PANDOC_OPTS = --metadata-file metadata.yml -V geometry:margin=1in --highlight=tango
-PANDOC_DOCKER = docker run --rm -v $(shell pwd):/data -u $(shell id -u):$(shell id -g) detjensrobert/arch-pandoc
+PANDOC_DOCKER = docker run --rm -v "$(shell pwd):/data" -u $(shell id -u):$(shell id -g) detjensrobert/arch-pandoc
 
 all: docs
 
