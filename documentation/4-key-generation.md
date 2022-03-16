@@ -22,7 +22,7 @@ The Key Generation and Storage part of `NOISE` is fundamentally responsible for 
       \codebox{
         \underline{$\subname{KeyGeneration}()$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
-        \> $s \gets \Seen$ \\
+        \> $s \gets \Salt$ \\
         \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
         \> $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} \gets \sig{KeyGen}$ \\
         \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\

@@ -13,7 +13,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       $\M = \bits^{128}$ \\
       $\C = \bits^{128}$ \\
       $\T = \bits^{128}$ \\
-      $\Seen = \bits^{96}$ \\
+      $\Salt = \bits^{96}$ \\
       \\
       $\text{blen} := 128$ \comment{// bits} \\
       $\text{klen} := 384$ \comment{// bits} \\
@@ -50,7 +50,7 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
     }
     \qquad
     \codebox{
-       \underline{$\subname{GetTag}_{\text{ECBC}}(k_1 \in \Sigma.\K, k_2 \in \Sigma.\K,$} \\
+       \underline{$\subname{GetTag}_{\text{ECBC}}(k_1, k_2 \in \Sigma.\K,$} \\
       \> \hspace{5.3em} \underline{$m_0 || \cdots || m_l \in \Sigma.\M)$:} \\
       \> $x := m_l$ \\
       \> $t := \bit{0}^{\Sigma.\text{blen}}$ \\
@@ -59,11 +59,11 @@ Throughout `NOISE`, several primitives are used. These primitives are defined be
       \> $t := \sig{F}_{\subname{AES-128}}(k_2, t \oplus x)$ \\
       \> return $t \in \Sigma.\T$ \\
       \\
-      \underline{$\subname{CheckTag}_{\text{ECBC}}(k_1 \in \Sigma.\K, k_2 \in \Sigma.\K,$} \\
+      \underline{$\subname{CheckTag}_{\text{ECBC}}(k_1, k_2 \in \Sigma.\K,$} \\
       \> \hspace{6.5em} \underline{$m_0 || \cdots || m_l \in \Sigma.\M, t \in \Sigma.\T)$:} \\
       \> return $t \qequiv \sig{GetTag}(k_1, k_2, m_0 || \cdots || m_l)$ \\
       \\
-      \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Sigma.\Seen)$:} \\
+      \underline{$\subname{PBKDF2}(p \in \bits^*, s \in \Sigma.\Salt)$:} \\
       \> $p := \sig{Hash}_{\text{D-M}}(p)$ \\
       \> for $i = 1$ to $\frac{\Sigma.\text{klen}}{\Sigma.\text{blen}}$: \\
       \> \> $u_1 := \sig{F}_{\subname{AES-128}}(p, s || i)$ \\
