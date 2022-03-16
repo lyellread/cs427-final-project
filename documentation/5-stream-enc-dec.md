@@ -10,37 +10,37 @@ The purpose of the Stream Encryption and Decryption functions are to encrypt and
 
 \begin{center}
   \titlecodebox{$\texttt{\upshape NOISE}$}{
-    define $k_\text{stream}, k_\text{mac1}, k_\text{mac2} \in \Sigma.\K$ \\
-    \\
-    \comment{// Keys are read from file} \\
-    $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{GetKeys}$ \\
+    \comment{// Read / decrypt keys from file} \\
+    $k_\text{stream}, k_\text{mac1}, k_\text{mac2} := \texttt{\upshape NOISE}.\subname{GetKeys}()$ \\
     \\
     \comment{// Get message from user} \\
     define $m \in \bits^*$ \\
     \\
     \comment{// Encrypt message} \\
-    $c := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m)$: \\
+    $c, t := \subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m)$: \\
     \\
     \comment{// Decrypt ciphertext} \\
-    $m_1 := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c)$: \\
+    $m' := \subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c, t)$: \\
     \\
-    assert $m = m_1$
+    assert $m = m'$
   }
   $\link$
   \titlecodebox{\lib{Stream}}{
     \codebox{
-      \underline{$\subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, m \in \bits^*)$:} \\
-      \> $m := \sig{Pad}(m)$ \\
-      \> $c := \sig{Enc}_\text{CTR}(k_\text{stream}, m)$ \\
+      \underline{$\subname{Enc}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}} \in \Sigma.\K,$} \\
+      \> \hspace{3.5em} \underline{$m \in \bits^*)$:} \\
+      \> $m' := \sig{Pad}(m)$ \\
+      \> $c := \sig{Enc}_\text{CTR}(k_\text{stream}, m')$ \\
       \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1}, k_\text{mac2}, c)$ \\
-      \> return $c || t$\\
+      \> return $(c, t)$\\
       \\
-      \underline{$\subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}}, c || t \in \Sigma.\T)$:} \\
-      \> if $\sig{CheckTag}_{\text{ECBC}}(k_\text{mac1}, k_\text{mac2}, c, t) = \bit{false}$: \\
+      \underline{$\subname{Dec}_{\text{Stream}}(k_\text{stream}, k_{\text{mac1}}, k_{\text{mac2}} \in \Sigma.\K,$} \\
+      \> \hspace{3.5em} \underline{$c \in \Sigma.\C, t \in \Sigma.\T)$:} \\
+      \> if $\sig{CheckTag}_{\text{ECBC}}(k_\text{mac1}, k_\text{mac2}, c, t) \qequiv \bit{false}$: \\
       \> \> return $\bit{err}$ \\
       \> $m := \sig{Dec}_\text{CTR}(k_\text{stream}, c)$ \\
-      \> $m := \sig{UnPad}(m)$ \\
-      \> return $m$
+      \> $m' := \sig{UnPad}(m)$ \\
+      \> return $m'$
     }
   }
 \end{center}

@@ -11,11 +11,13 @@ The Key Generation and Storage part of `NOISE` is fundamentally responsible for 
 \begin{center}
   \codebox{
     \titlecodebox{$\texttt{\upshape NOISE}$}{
-      \comment{// Generate keys} \\
-      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{KeyGeneration}()$ \\
+      \comment{// Generate and encrypt keys} \\
+      $s, c_k, t := \subname{KeyGeneration}()$ \\
+      $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(s || c_k || t)$ \\
       \\
-      \comment{// Get keys from file} \\
-      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{GetKeys}()$
+      \comment{// Read and decrypt keys from file} \\
+      $s || c_k || t := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
+      $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} := \subname{GetKeys}(s, c_k, t)$
     }
     $\link$
     \titlecodebox{\lib{KeyGen}}{
@@ -25,17 +27,14 @@ The Key Generation and Storage part of `NOISE` is fundamentally responsible for 
         \> $s \gets \Salt$ \\
         \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
         \> $k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}} \gets \sig{KeyGen}$ \\
-        \> $k_a := k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}$ \\
-        \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-pass}}, k_a) $ \\
+        \> $c_k := \sig{Enc}_\text{CTR}(k_{\text{stream-pass}}, k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}}) $ \\
         \> $t := \sig{GetTag}_{\text{ECBC}}(k_\text{mac1-pass}, k_{\text{mac2-pass}}, c_k)$ \\
-        \> $\texttt{\upshape NOISE}.\subname{WriteToKeyFile}(s || c_k || t)$\\
-        \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$ \\
+        \> return $(s, c_k, t)$ \\
         \\
-        \underline{$\subname{GetKeys}()$:} \\
+        \underline{$\subname{GetKeys}(s \in \Sigma.\Salt, c_k \in \Sigma.\C, t \in \Sigma.\T)$:} \\
         \> $p := \texttt{\upshape NOISE}.\subname{GetPassword}$ \\
-        \> $s || c_k || t := \texttt{\upshape NOISE}.\subname{ReadFromKeyFile}()$\\
         \> $k_{\text{stream-pass}} || k_{\text{mac1-pass}} || k_{\text{mac2-pass}} := \sig{PBKDF2}(p, s)$ \\
-        \> if $\sig{CheckTag}(k_{\text{mac1-pass}}, k_{\text{mac2-pass}}, c_k, t) = \bit{false}$: \\
+        \> if $\sig{CheckTag}(k_{\text{mac1-pass}}, k_{\text{mac2-pass}}, c_k, t) \qequiv \bit{false}$: \\
         \> \> return $\bit{err}$ \\
         \> $k_{\text{stream}} || k_{\text{mac1}} || k_{\text{mac2}} := \sig{Dec}_\text{CTR}(k_{\text{stream-pass}}, c_k)$ \\
         \> return $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
@@ -63,7 +62,7 @@ $\subname{KeyGeneration}$ makes use of two sets of three keys:
 - The user's keys: $(k_{\text{stream}}, k_{\text{mac1}}, k_{\text{mac2}})$
 - The master-password-based keys: $(k_{\text{stream-pass}}, k_{\text{mac1-pass}}, k_{\text{mac2-pass}})$
 
-The usage of these keys is demonstrated in detail in the implementation of library $\lib{KeyGen}$, in [Formal Scheme Definition]. The master-password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. These keys are then returned to be used for encryption and decryption. Using these three extra keys for master-password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack security against the keyfile itself.
+The usage of these keys is demonstrated in detail in the implementation of library $\lib{KeyGen}$, in [Formal Scheme Definition]. The master-password-based keys are generated from the password the user supplies, and are used ephemerally to decrypt the keyfile in which the user's keys reside. The decrypted keys are then returned to be used for encryption and decryption. Using these three extra keys for master-password-based keyfile encryption, we are able to also use ECBC MAC on the keyfile, which permits us to claim Chosen Ciphertext Attack (CCA) security for the stored keys.
 
 We find it reasonable to conclude that $\lib{KeyGen}$'s $\subname{KeyGeneration}$ is secure, based on the following assertions about its component parts.
 
